@@ -1,0 +1,12 @@
+This is a small demo project which uses the SmugMug API to give simple
+read access to your photos saved on SmugMug.
+
+You will need to supply your own API-key to get this project working.
+
+This project contains the SmugMug Java API by kallasoft licensed under
+the Apache License 2.0 . Please visit their homepage for more info:
+http://www.thebuzzmedia.com/software/smugmug-java-api/
+
+The SmugMug photo hosting and sharing service can be found at
+http://www.smugmug.com
+
