@@ -169,7 +169,7 @@ public class AlbumListActivity extends ListActivity {
             holder.desc.setText(item.getDescription());
             Drawable thumbnail = null;
             List<ImageInfo> cache = Cache.getAlbumImages(item);
-            if (cache != null) {
+            if (cache != null && cache.size() > 0) {
                 ImageInfo random = cache.get(rnd.nextInt(cache.size()));
                 thumbnail = random.getThumbnail();
             }
