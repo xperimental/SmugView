@@ -1,9 +1,17 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.gui;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import net.sourcewalker.smugview.ApiConstants;
+import net.sourcewalker.smugview.R;
+import net.sourcewalker.smugview.data.Cache;
+import net.sourcewalker.smugview.parcel.AlbumInfo;
+import net.sourcewalker.smugview.parcel.Extras;
+import net.sourcewalker.smugview.parcel.ImageInfo;
+import net.sourcewalker.smugview.parcel.LoginResult;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

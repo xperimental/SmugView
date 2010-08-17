@@ -1,4 +1,4 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.parcel;
 
 public class Extras {
 

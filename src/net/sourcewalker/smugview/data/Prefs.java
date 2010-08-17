@@ -1,4 +1,4 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;

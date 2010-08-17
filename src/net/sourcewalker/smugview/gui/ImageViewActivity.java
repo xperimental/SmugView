@@ -1,6 +1,10 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.gui;
 
 import java.io.IOException;
+
+import net.sourcewalker.smugview.R;
+import net.sourcewalker.smugview.parcel.Extras;
+import net.sourcewalker.smugview.parcel.ImageInfo;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

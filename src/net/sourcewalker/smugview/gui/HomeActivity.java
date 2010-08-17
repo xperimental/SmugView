@@ -1,5 +1,10 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.gui;
 
+import net.sourcewalker.smugview.ApiConstants;
+import net.sourcewalker.smugview.R;
+import net.sourcewalker.smugview.data.Prefs;
+import net.sourcewalker.smugview.parcel.Extras;
+import net.sourcewalker.smugview.parcel.LoginResult;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;

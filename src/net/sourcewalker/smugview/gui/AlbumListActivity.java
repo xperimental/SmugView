@@ -1,10 +1,17 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.gui;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import net.sourcewalker.smugview.ApiConstants;
+import net.sourcewalker.smugview.R;
+import net.sourcewalker.smugview.data.Cache;
+import net.sourcewalker.smugview.parcel.AlbumInfo;
+import net.sourcewalker.smugview.parcel.Extras;
+import net.sourcewalker.smugview.parcel.ImageInfo;
+import net.sourcewalker.smugview.parcel.LoginResult;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.DataSetObserver;

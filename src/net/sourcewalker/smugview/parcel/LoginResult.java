@@ -1,4 +1,4 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.parcel;
 
 import android.os.Parcel;
 import android.os.Parcelable;

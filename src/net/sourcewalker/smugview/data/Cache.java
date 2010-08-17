@@ -1,9 +1,11 @@
-package net.sourcewalker.smugview;
+package net.sourcewalker.smugview.data;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourcewalker.smugview.parcel.AlbumInfo;
+import net.sourcewalker.smugview.parcel.ImageInfo;
 import android.graphics.drawable.Drawable;
 
 public class Cache {

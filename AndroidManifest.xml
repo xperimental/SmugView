@@ -8,7 +8,7 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name">
         <activity
-            android:name=".HomeActivity"
+            android:name=".gui.HomeActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action
@@ -18,12 +18,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AlbumListActivity"
+            android:name=".gui.AlbumListActivity"
             android:label="@string/albumlist_title" />
         <activity
-            android:name=".AlbumActivity" />
+            android:name=".gui.AlbumActivity" />
         <activity
-            android:name=".ImageViewActivity" />
+            android:name=".gui.ImageViewActivity" />
     </application>
     <uses-sdk
         android:minSdkVersion="8" />
