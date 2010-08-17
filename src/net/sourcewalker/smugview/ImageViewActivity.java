@@ -29,6 +29,8 @@ public class ImageViewActivity extends Activity {
 
         image = (ImageInfo) getIntent().getExtras().get(Extras.EXTRA_IMAGE);
 
+        setTitle();
+
         viewer = (ImageView) findViewById(R.id.imageview);
         if (image.getThumbnail() != null) {
             viewer.setImageDrawable(image.getThumbnail());
@@ -36,6 +38,15 @@ public class ImageViewActivity extends Activity {
 
         if (image.getViewUrl() != null) {
             startGetImage();
+        }
+    }
+
+    private void setTitle() {
+        String description = image.getDescription();
+        if (description != null && description.length() > 0) {
+            setTitle(description);
+        } else {
+            setTitle(image.getFileName());
         }
     }
 

@@ -46,6 +46,8 @@ public class AlbumActivity extends ListActivity {
         login = (LoginResult) getIntent().getExtras().get(Extras.EXTRA_LOGIN);
         album = (AlbumInfo) getIntent().getExtras().get(Extras.EXTRA_ALBUM);
 
+        setTitle(album.getTitle());
+
         adapter = new AlbumAdapter();
         setListAdapter(adapter);
 
