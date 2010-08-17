@@ -31,9 +31,6 @@ import com.kallasoft.smugmug.api.json.v1_2_0.images.Get.GetResponse;
 
 public class AlbumActivity extends ListActivity {
 
-    public static final String EXTRA_LOGIN = "net.sourcewalker.smugview.AlbumActivity.EXTRA_LOGIN";
-    public static final String EXTRA_ALBUM = "net.sourcewalker.smugview.AlbumActivity.EXTRA_ALBUM";
-
     private LoginResult login;
     private AlbumInfo album;
     private AlbumAdapter adapter;
@@ -44,8 +41,8 @@ public class AlbumActivity extends ListActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.album);
 
-        login = (LoginResult) getIntent().getExtras().get(EXTRA_LOGIN);
-        album = (AlbumInfo) getIntent().getExtras().get(EXTRA_ALBUM);
+        login = (LoginResult) getIntent().getExtras().get(Extras.EXTRA_LOGIN);
+        album = (AlbumInfo) getIntent().getExtras().get(Extras.EXTRA_ALBUM);
 
         adapter = new AlbumAdapter();
         setListAdapter(adapter);

@@ -123,7 +123,7 @@ public class HomeActivity extends Activity implements OnClickListener {
             if (result.isSuccessful()) {
                 Intent albums = new Intent(getBaseContext(),
                         AlbumListActivity.class);
-                albums.putExtra(AlbumListActivity.EXTRA_LOGIN, result);
+                albums.putExtra(Extras.EXTRA_LOGIN, result);
                 startActivity(albums);
                 finish();
             } else {
