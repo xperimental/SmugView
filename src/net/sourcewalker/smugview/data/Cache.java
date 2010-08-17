@@ -38,4 +38,10 @@ public class Cache {
         images.put(imageId, image);
     }
 
+    /**
+     * Can't create instance of Cache class. Only for static members.
+     */
+    private Cache() {
+    }
+
 }
