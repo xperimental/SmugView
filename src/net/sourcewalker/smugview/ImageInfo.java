@@ -65,6 +65,14 @@ public class ImageInfo implements Parcelable {
         Cache.saveThumbnail(id, thumbnail);
     }
 
+    public Drawable getImage() {
+        return Cache.getImage(id);
+    }
+
+    public void setImage(Drawable image) {
+        Cache.saveImage(id, image);
+    }
+
     @Override
     public int describeContents() {
         return 0;

@@ -32,12 +32,17 @@ public class ImageViewActivity extends Activity {
         setTitle();
 
         viewer = (ImageView) findViewById(R.id.imageview);
-        if (image.getThumbnail() != null) {
-            viewer.setImageDrawable(image.getThumbnail());
-        }
 
-        if (image.getViewUrl() != null) {
-            startGetImage();
+        Drawable viewImage = image.getImage();
+        if (viewImage != null) {
+            viewer.setImageDrawable(viewImage);
+        } else {
+            if (image.getThumbnail() != null) {
+                viewer.setImageDrawable(image.getThumbnail());
+            }
+            if (image.getViewUrl() != null) {
+                startGetImage();
+            }
         }
     }
 
@@ -81,6 +86,7 @@ public class ImageViewActivity extends Activity {
         @Override
         protected void onPostExecute(Drawable result) {
             if (result != null) {
+                image.setImage(result);
                 viewer.setImageDrawable(result);
             }
             setProgressBarIndeterminateVisibility(false);

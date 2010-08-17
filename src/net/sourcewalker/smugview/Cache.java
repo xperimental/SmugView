@@ -10,6 +10,7 @@ public class Cache {
 
     private static final Map<Integer, List<ImageInfo>> albumImages = new HashMap<Integer, List<ImageInfo>>();
     private static final Map<Integer, Drawable> thumbnails = new HashMap<Integer, Drawable>();
+    private static final Map<Integer, Drawable> images = new HashMap<Integer, Drawable>();
 
     public static List<ImageInfo> getAlbumImages(AlbumInfo album) {
         return albumImages.get(album.getId());
@@ -25,6 +26,14 @@ public class Cache {
 
     public static void saveThumbnail(int imageId, Drawable thumbnail) {
         thumbnails.put(imageId, thumbnail);
+    }
+
+    public static Drawable getImage(int imageId) {
+        return images.get(imageId);
+    }
+
+    public static void saveImage(int imageId, Drawable image) {
+        images.put(imageId, image);
     }
 
 }
