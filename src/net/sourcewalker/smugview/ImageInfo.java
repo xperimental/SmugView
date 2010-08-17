@@ -44,7 +44,7 @@ public class ImageInfo implements Parcelable {
         this.fileName = source.getFileName();
         this.key = source.getImageKey();
         this.thumbUrl = source.getThumbURL();
-        this.viewUrl = source.getOriginalURL();
+        this.viewUrl = source.getLargeURL();
         this.description = source.getCaption();
     }
 
