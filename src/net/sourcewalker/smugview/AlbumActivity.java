@@ -83,7 +83,7 @@ public class AlbumActivity extends ListActivity {
                     login.getSession(), album.getId(), album.getKey(), true);
             if (!response.isError()) {
                 for (Image i : response.getImageList()) {
-                    result.add(new ImageInfo(album, i));
+                    result.add(new ImageInfo(i));
                 }
             }
             return result;

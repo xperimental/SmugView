@@ -6,18 +6,12 @@ import com.kallasoft.smugmug.api.json.entity.Image;
 
 public class ImageInfo {
 
-    private AlbumInfo album;
     private int id;
     private String fileName;
     private String key;
     private String thumbUrl;
     private String viewUrl;
-    private Drawable thumbnail;
     private String description;
-
-    public AlbumInfo getAlbum() {
-        return album;
-    }
 
     public int getId() {
         return id;
@@ -43,8 +37,7 @@ public class ImageInfo {
         return description;
     }
 
-    public ImageInfo(AlbumInfo album, Image source) {
-        this.album = album;
+    public ImageInfo(Image source) {
         this.id = source.getID();
         this.fileName = source.getFileName();
         this.key = source.getImageKey();
@@ -54,11 +47,11 @@ public class ImageInfo {
     }
 
     public Drawable getThumbnail() {
-        return thumbnail;
+        return Cache.getThumbnail(id);
     }
 
     public void setThumbnail(Drawable thumbnail) {
-        this.thumbnail = thumbnail;
+        Cache.saveThumbnail(id, thumbnail);
     }
 
 }

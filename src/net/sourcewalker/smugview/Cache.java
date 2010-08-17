@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.graphics.drawable.Drawable;
+
 public class Cache {
 
     private static final Map<Integer, List<ImageInfo>> albumImages = new HashMap<Integer, List<ImageInfo>>();
+    private static final Map<Integer, Drawable> thumbnails = new HashMap<Integer, Drawable>();
 
     public static List<ImageInfo> getAlbumImages(AlbumInfo album) {
         return albumImages.get(album.getId());
@@ -14,6 +17,14 @@ public class Cache {
 
     public static void setAlbumImages(AlbumInfo album, List<ImageInfo> images) {
         albumImages.put(album.getId(), images);
+    }
+
+    public static Drawable getThumbnail(int imageId) {
+        return thumbnails.get(imageId);
+    }
+
+    public static void saveThumbnail(int imageId, Drawable thumbnail) {
+        thumbnails.put(imageId, thumbnail);
     }
 
 }
