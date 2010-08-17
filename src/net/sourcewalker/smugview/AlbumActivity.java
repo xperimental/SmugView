@@ -11,6 +11,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.database.DataSetObserver;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.kallasoft.smugmug.api.json.entity.Image;
@@ -53,6 +55,14 @@ public class AlbumActivity extends ListActivity {
         } else {
             setImageList(cachedImages);
         }
+    }
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        ImageInfo item = (ImageInfo) adapter.getItem(position);
+        Intent intent = new Intent(this, ImageViewActivity.class);
+        intent.putExtra(Extras.EXTRA_IMAGE, item);
+        startActivity(intent);
     }
 
     private void startGetImages() {
