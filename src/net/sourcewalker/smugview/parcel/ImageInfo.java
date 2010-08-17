@@ -7,7 +7,7 @@ import android.os.Parcelable;
 
 import com.kallasoft.smugmug.api.json.entity.Image;
 
-public class ImageInfo implements Parcelable {
+public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
 
     private int id;
     private String fileName;
@@ -101,5 +101,19 @@ public class ImageInfo implements Parcelable {
             return new ImageInfo(source);
         }
     };
+
+    @Override
+    public int compareTo(ImageInfo another) {
+        return id - another.id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof ImageInfo) {
+            return id == ((ImageInfo) o).id;
+        } else {
+            return false;
+        }
+    }
 
 }

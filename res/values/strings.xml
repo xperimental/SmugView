@@ -8,4 +8,5 @@
     <string name="loginfailed">Login failed! Check your connection and input.</string>
     <string name="loginprogress">Logging in...</string>
     <string name="albumlist_title">Your albums</string>
+    <string name="nogestures">No gestures loaded!</string>
 </resources>

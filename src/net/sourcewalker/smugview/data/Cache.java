@@ -38,6 +38,30 @@ public class Cache {
         images.put(imageId, image);
     }
 
+    public static ImageInfo getPreviousInAlbum(ImageInfo image) {
+        for (List<ImageInfo> list : albumImages.values()) {
+            int index = list.indexOf(image);
+            if (index != -1) {
+                if (index != 0) {
+                    return list.get(index - 1);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static ImageInfo getNextInAlbum(ImageInfo image) {
+        for (List<ImageInfo> list : albumImages.values()) {
+            int index = list.indexOf(image);
+            if (index != -1) {
+                if (index != list.size() - 1) {
+                    return list.get(index + 1);
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Can't create instance of Cache class. Only for static members.
      */
