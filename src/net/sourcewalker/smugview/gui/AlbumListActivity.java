@@ -42,6 +42,10 @@ public class AlbumListActivity extends ListActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.albumlist);
 
+        if (Cache.get() == null) {
+            Cache.init(this);
+        }
+
         login = (LoginResult) getIntent().getExtras().get(Extras.EXTRA_LOGIN);
 
         listAdapter = new AlbumListAdapter();
@@ -168,7 +172,7 @@ public class AlbumListActivity extends ListActivity {
             holder.title.setText(item.getTitle());
             holder.desc.setText(item.getDescription());
             Drawable thumbnail = null;
-            List<ImageInfo> cache = Cache.getAlbumImages(item);
+            List<ImageInfo> cache = Cache.get().getAlbumImages(item);
             if (cache != null && cache.size() > 0) {
                 ImageInfo random = cache.get(rnd.nextInt(cache.size()));
                 thumbnail = random.getThumbnail();

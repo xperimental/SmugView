@@ -59,19 +59,19 @@ public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
     }
 
     public Drawable getThumbnail() {
-        return Cache.getThumbnail(id);
+        return Cache.get().getThumbnail(id);
     }
 
     public void setThumbnail(Drawable thumbnail) {
-        Cache.saveThumbnail(id, thumbnail);
+        Cache.get().saveThumbnail(id, thumbnail);
     }
 
     public Drawable getImage() {
-        return Cache.getImage(id);
+        return Cache.get().getImage(id);
     }
 
     public void setImage(Drawable image) {
-        Cache.saveImage(id, image);
+        Cache.get().saveImage(id, image);
     }
 
     @Override

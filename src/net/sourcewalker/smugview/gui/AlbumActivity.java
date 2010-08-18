@@ -51,6 +51,10 @@ public class AlbumActivity extends ListActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.album);
 
+        if (Cache.get() == null) {
+            Cache.init(this);
+        }
+
         login = (LoginResult) getIntent().getExtras().get(Extras.EXTRA_LOGIN);
         album = (AlbumInfo) getIntent().getExtras().get(Extras.EXTRA_ALBUM);
 
@@ -59,7 +63,7 @@ public class AlbumActivity extends ListActivity {
         adapter = new AlbumAdapter();
         setListAdapter(adapter);
 
-        List<ImageInfo> cachedImages = Cache.getAlbumImages(album);
+        List<ImageInfo> cachedImages = Cache.get().getAlbumImages(album);
         if (cachedImages == null) {
             startGetImages();
         } else {
@@ -113,7 +117,7 @@ public class AlbumActivity extends ListActivity {
         protected void onPostExecute(List<ImageInfo> result) {
             setProgressBarIndeterminateVisibility(false);
 
-            Cache.setAlbumImages(album, result);
+            Cache.get().setAlbumImages(album, result);
             setImageList(result);
         }
 

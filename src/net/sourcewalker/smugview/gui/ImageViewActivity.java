@@ -46,6 +46,10 @@ public class ImageViewActivity extends Activity implements
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.image);
 
+        if (Cache.get() == null) {
+            Cache.init(this);
+        }
+
         gestureLibrary = GestureLibraries.fromRawResource(this, R.raw.gestures);
         if (!gestureLibrary.load()) {
             Toast.makeText(this, R.string.nogestures, Toast.LENGTH_LONG);
@@ -88,12 +92,12 @@ public class ImageViewActivity extends Activity implements
 
     private void runGesture(String gestureName) {
         if (gestureName.equals(GESTURE_BACK)) {
-            ImageInfo previous = Cache.getPreviousInAlbum(image);
+            ImageInfo previous = Cache.get().getPreviousInAlbum(image);
             if (previous != null) {
                 loadImage(previous);
             }
         } else if (gestureName.equals(GESTURE_NEXT)) {
-            ImageInfo next = Cache.getNextInAlbum(image);
+            ImageInfo next = Cache.get().getNextInAlbum(image);
             if (next != null) {
                 loadImage(next);
             }
