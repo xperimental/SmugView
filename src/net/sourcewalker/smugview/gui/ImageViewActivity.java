@@ -14,6 +14,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.gesture.Gesture;
 import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
@@ -94,14 +95,21 @@ public class ImageViewActivity extends Activity implements
         if (gestureName.equals(GESTURE_BACK)) {
             ImageInfo previous = Cache.get().getPreviousInAlbum(image);
             if (previous != null) {
-                loadImage(previous);
+                replaceActivity(previous);
             }
         } else if (gestureName.equals(GESTURE_NEXT)) {
             ImageInfo next = Cache.get().getNextInAlbum(image);
             if (next != null) {
-                loadImage(next);
+                replaceActivity(next);
             }
         }
+    }
+
+    private void replaceActivity(ImageInfo newImage) {
+        Intent replace = new Intent(this, ImageViewActivity.class);
+        replace.putExtra(Extras.EXTRA_IMAGE, newImage);
+        startActivity(replace);
+        finish();
     }
 
     private void setTitle() {
