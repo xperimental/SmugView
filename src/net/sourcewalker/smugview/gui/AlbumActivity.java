@@ -7,17 +7,23 @@ import java.util.List;
 
 import net.sourcewalker.smugview.ApiConstants;
 import net.sourcewalker.smugview.R;
+import net.sourcewalker.smugview.auth.Authenticator;
 import net.sourcewalker.smugview.data.Cache;
 import net.sourcewalker.smugview.parcel.AlbumInfo;
 import net.sourcewalker.smugview.parcel.Extras;
 import net.sourcewalker.smugview.parcel.ImageInfo;
-import net.sourcewalker.smugview.parcel.LoginResult;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.DataSetObserver;
@@ -41,7 +47,8 @@ import com.kallasoft.smugmug.api.json.v1_2_0.images.Get.GetResponse;
 
 public class AlbumActivity extends ListActivity {
 
-    private LoginResult login;
+    protected static final String TAG = "AlbumActivity";
+
     private AlbumInfo album;
     private AlbumAdapter adapter;
 
@@ -55,7 +62,6 @@ public class AlbumActivity extends ListActivity {
             Cache.init(this);
         }
 
-        login = (LoginResult) getIntent().getExtras().get(Extras.EXTRA_LOGIN);
         album = (AlbumInfo) getIntent().getExtras().get(Extras.EXTRA_ALBUM);
 
         setTitle(album.getTitle());
@@ -80,7 +86,35 @@ public class AlbumActivity extends ListActivity {
     }
 
     private void startGetImages() {
-        new GetImagesTask().execute(login, album);
+        AccountManager accountManager = AccountManager.get(this);
+        Account[] accounts = accountManager
+                .getAccountsByType(Authenticator.TYPE);
+        if (accounts.length == 0) {
+            finish();
+        }
+        AccountManagerCallback<Bundle> callback = new AccountManagerCallback<Bundle>() {
+
+            @Override
+            public void run(AccountManagerFuture<Bundle> future) {
+                try {
+                    Bundle result = future.getResult();
+                    String sessionId = result
+                            .getString(AccountManager.KEY_AUTHTOKEN);
+                    new GetImagesTask().execute(sessionId, album);
+                } catch (OperationCanceledException e) {
+                } catch (AuthenticatorException e) {
+                    Log.e(TAG,
+                            "Exception while getting authtoken: "
+                                    + e.getMessage());
+                } catch (IOException e) {
+                    Log.e(TAG,
+                            "Exception while getting authtoken: "
+                                    + e.getMessage());
+                }
+            }
+        };
+        accountManager.getAuthToken(accounts[0], Authenticator.TOKEN_TYPE,
+                null, this, callback, null);
     }
 
     private void setImageList(List<ImageInfo> imageList) {
@@ -98,13 +132,13 @@ public class AlbumActivity extends ListActivity {
 
         @Override
         protected List<ImageInfo> doInBackground(Object... params) {
-            LoginResult login = (LoginResult) params[0];
+            String sessionId = (String) params[0];
             AlbumInfo album = (AlbumInfo) params[1];
             List<ImageInfo> result = new ArrayList<ImageInfo>();
 
             GetResponse response = new Get().execute(
                     APIVersionConstants.SECURE_SERVER_URL, ApiConstants.APIKEY,
-                    login.getSession(), album.getId(), album.getKey(), true);
+                    sessionId, album.getId(), album.getKey(), true);
             if (!response.isError()) {
                 for (Image i : response.getImageList()) {
                     result.add(new ImageInfo(i));
@@ -260,8 +294,8 @@ public class AlbumActivity extends ListActivity {
                     result = new BitmapDrawable(response.getEntity()
                             .getContent());
                 } catch (IOException e) {
-                    Log.e("GetThumbnailTask", "Error getting thumbnail: "
-                            + e.getMessage());
+                    Log.e("GetThumbnailTask",
+                            "Error getting thumbnail: " + e.getMessage());
                 }
             }
             return new Object[] { adapter, image, result };
