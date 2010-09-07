@@ -21,6 +21,9 @@
             android:name=".gui.AlbumActivity" />
         <activity
             android:name=".gui.ImageViewActivity" />
+        <provider
+            android:name=".data.SmugViewProvider"
+            android:authorities="net.sourcewalker.smugview" />
         <service
             android:exported="true"
             android:name=".auth.AuthenticationService">
