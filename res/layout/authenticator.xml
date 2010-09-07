@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <TableLayout
-        android:id="@+id/inputpanel"
+        android:id="@+id/auth_inputpanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -21,7 +21,7 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/username"
+                android:id="@+id/auth_username"
                 android:inputType="textEmailAddress" />
         </TableRow>
         <TableRow
@@ -34,25 +34,25 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/password"
+                android:id="@+id/auth_password"
                 android:inputType="textPassword" />
         </TableRow>
     </TableLayout>
     <RelativeLayout
-        android:id="@+id/buttonpanel"
+        android:id="@+id/auth_buttonpanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/inputpanel"
+        android:layout_below="@id/auth_inputpanel"
         android:layout_alignParentBottom="true">
         <Button
-            android:id="@+id/cancelbutton"
+            android:id="@+id/auth_cancelbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentBottom="true"
             android:text="@string/cancel" />
         <Button
-            android:id="@+id/loginbutton"
+            android:id="@+id/auth_loginbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"

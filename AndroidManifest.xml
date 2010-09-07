@@ -8,7 +8,7 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name">
         <activity
-            android:name=".gui.HomeActivity"
+            android:name=".gui.AlbumListActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action
@@ -18,17 +18,35 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".gui.AlbumListActivity"
-            android:label="@string/albumlist_title" />
-        <activity
             android:name=".gui.AlbumActivity" />
         <activity
             android:name=".gui.ImageViewActivity" />
+        <service
+            android:exported="true"
+            android:name=".auth.AuthenticationService">
+            <intent-filter>
+                <action
+                    android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+        <activity
+            android:name=".auth.AuthenticationActivity" android:label="@string/auth_title"/>
     </application>
     <uses-sdk
         android:minSdkVersion="8" />
     <uses-permission
         android:name="android.permission.INTERNET" />
     <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-</manifest> 
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission
+        android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission
+        android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission
+        android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+</manifest>

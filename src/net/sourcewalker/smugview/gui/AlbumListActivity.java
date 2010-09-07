@@ -1,5 +1,6 @@
 package net.sourcewalker.smugview.gui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -7,17 +8,24 @@ import java.util.Random;
 
 import net.sourcewalker.smugview.ApiConstants;
 import net.sourcewalker.smugview.R;
+import net.sourcewalker.smugview.auth.Authenticator;
 import net.sourcewalker.smugview.data.Cache;
 import net.sourcewalker.smugview.parcel.AlbumInfo;
 import net.sourcewalker.smugview.parcel.Extras;
 import net.sourcewalker.smugview.parcel.ImageInfo;
-import net.sourcewalker.smugview.parcel.LoginResult;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -25,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kallasoft.smugmug.api.json.entity.Album;
 import com.kallasoft.smugmug.api.json.v1_2_0.APIVersionConstants;
@@ -33,8 +42,11 @@ import com.kallasoft.smugmug.api.json.v1_2_0.albums.Get.GetResponse;
 
 public class AlbumListActivity extends ListActivity {
 
+    private static final String TAG = "AlbumListActivity";
+
     private AlbumListAdapter listAdapter;
-    private LoginResult login;
+
+    private AccountManager accountManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,29 +58,88 @@ public class AlbumListActivity extends ListActivity {
             Cache.init(this);
         }
 
-        login = (LoginResult) getIntent().getExtras().get(Extras.EXTRA_LOGIN);
-
         listAdapter = new AlbumListAdapter();
         setListAdapter(listAdapter);
+
+        accountManager = AccountManager.get(this);
 
         startGetAlbums();
     }
 
     private void startGetAlbums() {
-        new GetAlbumsTask().execute(login);
+        Account[] accounts = accountManager
+                .getAccountsByType(Authenticator.TYPE);
+        if (accounts.length == 0) {
+            startAddAccount();
+        } else {
+            AccountManagerCallback<Bundle> callback = new AccountManagerCallback<Bundle>() {
+
+                @Override
+                public void run(AccountManagerFuture<Bundle> future) {
+                    try {
+                        Bundle result = future.getResult();
+                        String session = result
+                                .getString(AccountManager.KEY_AUTHTOKEN);
+                        new GetAlbumsTask().execute(session);
+                    } catch (OperationCanceledException e) {
+                    } catch (AuthenticatorException e) {
+                        Log.e(TAG,
+                                "Exception while getting authtoken: "
+                                        + e.getMessage());
+                    } catch (IOException e) {
+                        Log.e(TAG,
+                                "Exception while getting authtoken: "
+                                        + e.getMessage());
+                    }
+                }
+            };
+            accountManager.getAuthToken(accounts[0], Authenticator.TOKEN_TYPE,
+                    null, this, callback, null);
+        }
+    }
+
+    /**
+     * Launches the activity to create a new account. If the account was created
+     * successfully the album list is refreshed.
+     */
+    private void startAddAccount() {
+        AccountManagerCallback<Bundle> callback = new AccountManagerCallback<Bundle>() {
+
+            @Override
+            public void run(AccountManagerFuture<Bundle> future) {
+                try {
+                    // Get result (throws exceptions)
+                    future.getResult();
+                    // Retry getting albums
+                    startGetAlbums();
+                } catch (OperationCanceledException e) {
+                    Toast.makeText(AlbumListActivity.this,
+                            R.string.auth_accountneeded, Toast.LENGTH_LONG)
+                            .show();
+                    finish();
+                } catch (AuthenticatorException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        };
+        accountManager.addAccount(Authenticator.TYPE, null, null, null, this,
+                callback, null);
     }
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         AlbumInfo album = (AlbumInfo) listAdapter.getItem(position);
         Intent intent = new Intent(this, AlbumActivity.class);
-        intent.putExtra(Extras.EXTRA_LOGIN, login);
         intent.putExtra(Extras.EXTRA_ALBUM, album);
         startActivity(intent);
     }
 
     private class GetAlbumsTask extends
-            AsyncTask<LoginResult, Void, List<AlbumInfo>> {
+            AsyncTask<String, Void, List<AlbumInfo>> {
 
         @Override
         protected void onPreExecute() {
@@ -76,12 +147,12 @@ public class AlbumListActivity extends ListActivity {
         }
 
         @Override
-        protected List<AlbumInfo> doInBackground(LoginResult... params) {
-            LoginResult login = params[0];
+        protected List<AlbumInfo> doInBackground(String... params) {
+            String sessionId = params[0];
             List<AlbumInfo> result = new ArrayList<AlbumInfo>();
             GetResponse response = new Get().execute(
                     APIVersionConstants.SECURE_SERVER_URL, ApiConstants.APIKEY,
-                    login.getSession(), false);
+                    sessionId, false);
             if (!response.isError()) {
                 for (Album a : response.getAlbumList()) {
                     result.add(new AlbumInfo(a));

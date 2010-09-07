@@ -9,4 +9,8 @@
     <string name="loginprogress">Logging in...</string>
     <string name="albumlist_title">Your albums</string>
     <string name="nogestures">No gestures loaded!</string>
+    <string name="authenticator">SmugMug</string>
+    <string name="auth_title">Setup SmugMug account</string>
+    <string name="auth_createfailed">Creating account failed! Please try again.</string>
+    <string name="auth_accountneeded">You need to setup a SmugMug account to use this application!</string>
 </resources>
