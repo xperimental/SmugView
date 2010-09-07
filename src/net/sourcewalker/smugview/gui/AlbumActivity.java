@@ -1,56 +1,27 @@
 package net.sourcewalker.smugview.gui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import net.sourcewalker.smugview.ApiConstants;
 import net.sourcewalker.smugview.R;
-import net.sourcewalker.smugview.auth.Authenticator;
-import net.sourcewalker.smugview.data.Cache;
+import net.sourcewalker.smugview.data.SmugView;
 import net.sourcewalker.smugview.parcel.AlbumInfo;
 import net.sourcewalker.smugview.parcel.Extras;
-import net.sourcewalker.smugview.parcel.ImageInfo;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
-import android.accounts.OperationCanceledException;
 import android.app.ListActivity;
+import android.content.ContentUris;
 import android.content.Intent;
-import android.database.DataSetObserver;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-
-import com.kallasoft.smugmug.api.json.entity.Image;
-import com.kallasoft.smugmug.api.json.v1_2_0.APIVersionConstants;
-import com.kallasoft.smugmug.api.json.v1_2_0.images.Get;
-import com.kallasoft.smugmug.api.json.v1_2_0.images.Get.GetResponse;
+import android.widget.SimpleCursorAdapter;
 
 public class AlbumActivity extends ListActivity {
 
     protected static final String TAG = "AlbumActivity";
 
-    private AlbumInfo album;
-    private AlbumAdapter adapter;
+    private ListAdapter listAdapter;
+    private long albumId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,72 +29,32 @@ public class AlbumActivity extends ListActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.album);
 
-        if (Cache.get() == null) {
-            Cache.init(this);
-        }
+        albumId = (Long) getIntent().getExtras().get(Extras.EXTRA_ALBUM);
 
-        album = (AlbumInfo) getIntent().getExtras().get(Extras.EXTRA_ALBUM);
+        Cursor cursor = getContentResolver()
+                .query(ContentUris.withAppendedId(SmugView.Album.CONTENT_URI,
+                        albumId), SmugView.Album.DEFAULT_PROJECTION, null,
+                        null, null);
+        cursor.moveToFirst();
+        AlbumInfo album = new AlbumInfo(cursor);
 
         setTitle(album.getTitle());
 
-        adapter = new AlbumAdapter();
-        setListAdapter(adapter);
-
-        List<ImageInfo> cachedImages = Cache.get().getAlbumImages(album);
-        if (cachedImages == null) {
-            startGetImages();
-        } else {
-            setImageList(cachedImages);
-        }
+        startGetImages();
     }
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        ImageInfo item = (ImageInfo) adapter.getItem(position);
         Intent intent = new Intent(this, ImageViewActivity.class);
-        intent.putExtra(Extras.EXTRA_IMAGE, item);
+        intent.putExtra(Extras.EXTRA_IMAGE, id);
         startActivity(intent);
     }
 
     private void startGetImages() {
-        AccountManager accountManager = AccountManager.get(this);
-        Account[] accounts = accountManager
-                .getAccountsByType(Authenticator.TYPE);
-        if (accounts.length == 0) {
-            finish();
-        }
-        AccountManagerCallback<Bundle> callback = new AccountManagerCallback<Bundle>() {
-
-            @Override
-            public void run(AccountManagerFuture<Bundle> future) {
-                try {
-                    Bundle result = future.getResult();
-                    String sessionId = result
-                            .getString(AccountManager.KEY_AUTHTOKEN);
-                    new GetImagesTask().execute(sessionId, album);
-                } catch (OperationCanceledException e) {
-                } catch (AuthenticatorException e) {
-                    Log.e(TAG,
-                            "Exception while getting authtoken: "
-                                    + e.getMessage());
-                } catch (IOException e) {
-                    Log.e(TAG,
-                            "Exception while getting authtoken: "
-                                    + e.getMessage());
-                }
-            }
-        };
-        accountManager.getAuthToken(accounts[0], Authenticator.TOKEN_TYPE,
-                null, this, callback, null);
+        new GetImagesTask().execute(albumId);
     }
 
-    private void setImageList(List<ImageInfo> imageList) {
-        adapter.clear();
-        adapter.addAll(imageList);
-    }
-
-    private class GetImagesTask extends
-            AsyncTask<Object, Void, List<ImageInfo>> {
+    private class GetImagesTask extends AsyncTask<Long, Void, Cursor> {
 
         @Override
         protected void onPreExecute() {
@@ -131,186 +62,74 @@ public class AlbumActivity extends ListActivity {
         }
 
         @Override
-        protected List<ImageInfo> doInBackground(Object... params) {
-            String sessionId = (String) params[0];
-            AlbumInfo album = (AlbumInfo) params[1];
-            List<ImageInfo> result = new ArrayList<ImageInfo>();
-
-            GetResponse response = new Get().execute(
-                    APIVersionConstants.SECURE_SERVER_URL, ApiConstants.APIKEY,
-                    sessionId, album.getId(), album.getKey(), true);
-            if (!response.isError()) {
-                for (Image i : response.getImageList()) {
-                    result.add(new ImageInfo(i));
-                }
-            }
-            return result;
+        protected Cursor doInBackground(Long... params) {
+            return managedQuery(SmugView.Image.CONTENT_URI,
+                    SmugView.Image.DEFAULT_PROJECTION, SmugView.Image.ALBUM_ID
+                            + " = ?", new String[] { params[0].toString() },
+                    null);
+            // LoginResult login = (LoginResult) params[0];
+            // AlbumInfo album = (AlbumInfo) params[1];
+            // List<ImageInfo> result = new ArrayList<ImageInfo>();
+            //
+            // GetResponse response = new Get().execute(
+            // APIVersionConstants.SECURE_SERVER_URL, ApiConstants.APIKEY,
+            // login.getSession(), album.getId(), album.getKey(), true);
+            // if (!response.isError()) {
+            // for (Image i : response.getImageList()) {
+            // result.add(new ImageInfo(i));
+            // }
+            // }
+            // return result;
         }
 
         @Override
-        protected void onPostExecute(List<ImageInfo> result) {
+        protected void onPostExecute(Cursor result) {
             setProgressBarIndeterminateVisibility(false);
 
-            Cache.get().setAlbumImages(album, result);
-            setImageList(result);
+            listAdapter = new SimpleCursorAdapter(AlbumActivity.this,
+                    R.layout.album_row, result,
+                    new String[] { SmugView.Image.DESCRIPTION,
+                            SmugView.Image.FILENAME }, new int[] {
+                            R.id.image_desc, R.id.image_filename });
+            setListAdapter(listAdapter);
         }
 
     }
 
-    private class AlbumAdapter implements ListAdapter {
-
-        private List<ImageInfo> images = new ArrayList<ImageInfo>();
-        private List<DataSetObserver> observers = new ArrayList<DataSetObserver>();
-
-        public void addAll(Collection<ImageInfo> values) {
-            images.addAll(values);
-            notifyObservers();
-        }
-
-        public void clear() {
-            images.clear();
-            notifyObservers();
-        }
-
-        private void notifyObservers() {
-            for (DataSetObserver o : observers) {
-                o.onChanged();
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return images.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return images.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return images.get(position).getId();
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ImageHolder holder;
-            if (convertView == null) {
-                convertView = View.inflate(AlbumActivity.this,
-                        R.layout.album_row, null);
-                holder = new ImageHolder();
-                holder.fileName = (TextView) convertView
-                        .findViewById(R.id.filename);
-                holder.description = (TextView) convertView
-                        .findViewById(R.id.description);
-                holder.thumbnail = (ImageView) convertView
-                        .findViewById(R.id.thumbnail);
-                convertView.setTag(holder);
-            } else {
-                holder = (ImageHolder) convertView.getTag();
-            }
-            ImageInfo item = images.get(position);
-            holder.fileName.setText(item.getFileName());
-            holder.description.setText(item.getDescription());
-            if (item.getThumbnail() == null) {
-                new GetThumbnailTask().execute(this, item);
-                holder.thumbnail.setImageDrawable(getResources().getDrawable(
-                        android.R.drawable.ic_menu_rotate));
-            } else {
-                holder.thumbnail.setImageDrawable(item.getThumbnail());
-            }
-            return convertView;
-        }
-
-        @Override
-        public int getViewTypeCount() {
-            return 1;
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return images.size() == 0;
-        }
-
-        @Override
-        public void registerDataSetObserver(DataSetObserver observer) {
-            observers.add(observer);
-        }
-
-        @Override
-        public void unregisterDataSetObserver(DataSetObserver observer) {
-            observers.remove(observer);
-        }
-
-        @Override
-        public boolean areAllItemsEnabled() {
-            return true;
-        }
-
-        @Override
-        public boolean isEnabled(int position) {
-            return true;
-        }
-
-        public void update(ImageInfo item) {
-            if (images.contains(item)) {
-                notifyObservers();
-            }
-        }
-
-    }
-
-    private class ImageHolder {
-
-        public TextView fileName;
-        public TextView description;
-        public ImageView thumbnail;
-    }
-
-    private class GetThumbnailTask extends AsyncTask<Object, Void, Object[]> {
-
-        @Override
-        protected Object[] doInBackground(Object... params) {
-            AlbumAdapter adapter = (AlbumAdapter) params[0];
-            ImageInfo image = (ImageInfo) params[1];
-            String thumbUrl = image.getThumbUrl();
-            Drawable result = null;
-            if (thumbUrl != null) {
-                HttpGet get = new HttpGet(thumbUrl);
-                HttpClient client = new DefaultHttpClient();
-                try {
-                    HttpResponse response = client.execute(get);
-                    result = new BitmapDrawable(response.getEntity()
-                            .getContent());
-                } catch (IOException e) {
-                    Log.e("GetThumbnailTask",
-                            "Error getting thumbnail: " + e.getMessage());
-                }
-            }
-            return new Object[] { adapter, image, result };
-        }
-
-        @Override
-        protected void onPostExecute(Object[] result) {
-            AlbumAdapter adapter = (AlbumAdapter) result[0];
-            ImageInfo image = (ImageInfo) result[1];
-            Drawable thumbnail = (Drawable) result[2];
-            if (thumbnail != null) {
-                image.setThumbnail(thumbnail);
-                adapter.update(image);
-            }
-        }
-    }
+    // private class GetThumbnailTask extends AsyncTask<Object, Void, Object[]>
+    // {
+    //
+    // @Override
+    // protected Object[] doInBackground(Object... params) {
+    // AlbumAdapter adapter = (AlbumAdapter) params[0];
+    // ImageInfo image = (ImageInfo) params[1];
+    // String thumbUrl = image.getThumbUrl();
+    // Drawable result = null;
+    // if (thumbUrl != null) {
+    // HttpGet get = new HttpGet(thumbUrl);
+    // HttpClient client = new DefaultHttpClient();
+    // try {
+    // HttpResponse response = client.execute(get);
+    // result = new BitmapDrawable(response.getEntity()
+    // .getContent());
+    // } catch (IOException e) {
+    // Log.e("GetThumbnailTask",
+    // "Error getting thumbnail: " + e.getMessage());
+    // }
+    // }
+    // return new Object[] { adapter, image, result };
+    // }
+    //
+    // @Override
+    // protected void onPostExecute(Object[] result) {
+    // AlbumAdapter adapter = (AlbumAdapter) result[0];
+    // ImageInfo image = (ImageInfo) result[1];
+    // Drawable thumbnail = (Drawable) result[2];
+    // if (thumbnail != null) {
+    // image.setThumbnail(thumbnail);
+    // adapter.update(image);
+    // }
+    // }
+    // }
 
 }

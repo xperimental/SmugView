@@ -23,7 +23,7 @@
             android:id="@+id/albumrow_desc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="8pt"
+            android:textSize="6pt"
             android:text="Description" />
     </LinearLayout>
 </RelativeLayout>

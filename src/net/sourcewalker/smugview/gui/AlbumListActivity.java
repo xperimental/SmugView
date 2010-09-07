@@ -1,18 +1,12 @@
 package net.sourcewalker.smugview.gui;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
 
-import net.sourcewalker.smugview.ApiConstants;
 import net.sourcewalker.smugview.R;
 import net.sourcewalker.smugview.auth.Authenticator;
-import net.sourcewalker.smugview.data.Cache;
-import net.sourcewalker.smugview.parcel.AlbumInfo;
+import net.sourcewalker.smugview.data.ReloadAlbumsTask;
+import net.sourcewalker.smugview.data.SmugView;
 import net.sourcewalker.smugview.parcel.Extras;
-import net.sourcewalker.smugview.parcel.ImageInfo;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -21,45 +15,30 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.ListActivity;
 import android.content.Intent;
-import android.database.DataSetObserver;
-import android.graphics.drawable.Drawable;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
-
-import com.kallasoft.smugmug.api.json.entity.Album;
-import com.kallasoft.smugmug.api.json.v1_2_0.APIVersionConstants;
-import com.kallasoft.smugmug.api.json.v1_2_0.albums.Get;
-import com.kallasoft.smugmug.api.json.v1_2_0.albums.Get.GetResponse;
 
 public class AlbumListActivity extends ListActivity {
 
     private static final String TAG = "AlbumListActivity";
 
-    private AlbumListAdapter listAdapter;
-
     private AccountManager accountManager;
+    private SimpleCursorAdapter listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.albumlist);
-
-        if (Cache.get() == null) {
-            Cache.init(this);
-        }
-
-        listAdapter = new AlbumListAdapter();
-        setListAdapter(listAdapter);
 
         accountManager = AccountManager.get(this);
 
@@ -77,10 +56,8 @@ public class AlbumListActivity extends ListActivity {
                 @Override
                 public void run(AccountManagerFuture<Bundle> future) {
                     try {
-                        Bundle result = future.getResult();
-                        String session = result
-                                .getString(AccountManager.KEY_AUTHTOKEN);
-                        new GetAlbumsTask().execute(session);
+                        future.getResult();
+                        new GetAlbumsTask().execute();
                     } catch (OperationCanceledException e) {
                     } catch (AuthenticatorException e) {
                         Log.e(TAG,
@@ -132,14 +109,37 @@ public class AlbumListActivity extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        AlbumInfo album = (AlbumInfo) listAdapter.getItem(position);
         Intent intent = new Intent(this, AlbumActivity.class);
-        intent.putExtra(Extras.EXTRA_ALBUM, album);
+        intent.putExtra(Extras.EXTRA_ALBUM, id);
         startActivity(intent);
     }
 
-    private class GetAlbumsTask extends
-            AsyncTask<String, Void, List<AlbumInfo>> {
+    /*
+     * (non-Javadoc)
+     * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.albumlist, menu);
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.albumlist_refresh:
+            new ReloadAlbumsTask(this).execute();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private class GetAlbumsTask extends AsyncTask<Void, Void, Cursor> {
 
         @Override
         protected void onPreExecute() {
@@ -147,141 +147,21 @@ public class AlbumListActivity extends ListActivity {
         }
 
         @Override
-        protected List<AlbumInfo> doInBackground(String... params) {
-            String sessionId = params[0];
-            List<AlbumInfo> result = new ArrayList<AlbumInfo>();
-            GetResponse response = new Get().execute(
-                    APIVersionConstants.SECURE_SERVER_URL, ApiConstants.APIKEY,
-                    sessionId, false);
-            if (!response.isError()) {
-                for (Album a : response.getAlbumList()) {
-                    result.add(new AlbumInfo(a));
-                }
-            }
-            return result;
+        protected Cursor doInBackground(Void... params) {
+            return managedQuery(SmugView.Album.CONTENT_URI,
+                    SmugView.Album.DEFAULT_PROJECTION, null, null, null);
         }
 
         @Override
-        protected void onPostExecute(List<AlbumInfo> result) {
+        protected void onPostExecute(Cursor result) {
             setProgressBarIndeterminateVisibility(false);
 
-            listAdapter.clear();
-            listAdapter.addAll(result);
+            listAdapter = new SimpleCursorAdapter(AlbumListActivity.this,
+                    R.layout.albumlist_row, result, new String[] {
+                            SmugView.Album.TITLE, SmugView.Album.DESCRIPTION },
+                    new int[] { R.id.albumrow_title, R.id.albumrow_desc });
+            setListAdapter(listAdapter);
         }
     }
 
-    private class AlbumListAdapter implements ListAdapter {
-
-        private List<AlbumInfo> albums = new ArrayList<AlbumInfo>();
-        private List<DataSetObserver> observers = new ArrayList<DataSetObserver>();
-        private Random rnd = new Random();
-
-        public void addAll(Collection<? extends AlbumInfo> items) {
-            albums.addAll(items);
-            notifyObservers();
-        }
-
-        public void clear() {
-            albums.clear();
-            notifyObservers();
-        }
-
-        private void notifyObservers() {
-            for (DataSetObserver observer : observers) {
-                observer.onChanged();
-            }
-        }
-
-        @Override
-        public boolean areAllItemsEnabled() {
-            return true;
-        }
-
-        @Override
-        public boolean isEnabled(int position) {
-            return true;
-        }
-
-        @Override
-        public int getCount() {
-            return albums.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return albums.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return albums.get(position).getId();
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            AlbumListHolder holder;
-            if (convertView == null) {
-                convertView = View.inflate(AlbumListActivity.this,
-                        R.layout.albumlist_row, null);
-                holder = new AlbumListHolder();
-                holder.title = (TextView) convertView
-                        .findViewById(R.id.albumrow_title);
-                holder.desc = (TextView) convertView
-                        .findViewById(R.id.albumrow_desc);
-                holder.example = (ImageView) convertView
-                        .findViewById(R.id.albumrow_image);
-                convertView.setTag(holder);
-            } else {
-                holder = (AlbumListHolder) convertView.getTag();
-            }
-            AlbumInfo item = albums.get(position);
-            holder.title.setText(item.getTitle());
-            holder.desc.setText(item.getDescription());
-            Drawable thumbnail = null;
-            List<ImageInfo> cache = Cache.get().getAlbumImages(item);
-            if (cache != null && cache.size() > 0) {
-                ImageInfo random = cache.get(rnd.nextInt(cache.size()));
-                thumbnail = random.getThumbnail();
-            }
-            holder.example.setImageDrawable(thumbnail);
-            return convertView;
-        }
-
-        @Override
-        public int getViewTypeCount() {
-            return 1;
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return albums.size() == 0;
-        }
-
-        @Override
-        public void registerDataSetObserver(DataSetObserver observer) {
-            observers.add(observer);
-        }
-
-        @Override
-        public void unregisterDataSetObserver(DataSetObserver observer) {
-            observers.remove(observer);
-        }
-    }
-
-    private class AlbumListHolder {
-
-        public TextView title;
-        public TextView desc;
-        public ImageView example;
-    }
 }

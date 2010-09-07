@@ -1,6 +1,5 @@
 package net.sourcewalker.smugview.parcel;
 
-import net.sourcewalker.smugview.data.Cache;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -15,6 +14,8 @@ public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
     private String thumbUrl;
     private String viewUrl;
     private String description;
+    private Drawable thumbnail;
+    private Drawable image;
 
     public int getId() {
         return id;
@@ -59,19 +60,19 @@ public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
     }
 
     public Drawable getThumbnail() {
-        return Cache.get().getThumbnail(id);
+        return thumbnail;
     }
 
     public void setThumbnail(Drawable thumbnail) {
-        Cache.get().saveThumbnail(id, thumbnail);
+        this.thumbnail = thumbnail;
     }
 
     public Drawable getImage() {
-        return Cache.get().getImage(id);
+        return image;
     }
 
     public void setImage(Drawable image) {
-        Cache.get().saveImage(id, image);
+        this.image = image;
     }
 
     @Override

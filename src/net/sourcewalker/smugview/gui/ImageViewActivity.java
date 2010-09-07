@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import net.sourcewalker.smugview.R;
-import net.sourcewalker.smugview.data.Cache;
 import net.sourcewalker.smugview.parcel.Extras;
 import net.sourcewalker.smugview.parcel.ImageInfo;
 
@@ -19,8 +18,8 @@ import android.gesture.Gesture;
 import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
 import android.gesture.GestureOverlayView;
-import android.gesture.Prediction;
 import android.gesture.GestureOverlayView.OnGesturePerformedListener;
+import android.gesture.Prediction;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -46,10 +45,6 @@ public class ImageViewActivity extends Activity implements
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.image);
-
-        if (Cache.get() == null) {
-            Cache.init(this);
-        }
 
         gestureLibrary = GestureLibraries.fromRawResource(this, R.raw.gestures);
         if (!gestureLibrary.load()) {
@@ -92,17 +87,17 @@ public class ImageViewActivity extends Activity implements
     }
 
     private void runGesture(String gestureName) {
-        if (gestureName.equals(GESTURE_BACK)) {
-            ImageInfo previous = Cache.get().getPreviousInAlbum(image);
-            if (previous != null) {
-                replaceActivity(previous);
-            }
-        } else if (gestureName.equals(GESTURE_NEXT)) {
-            ImageInfo next = Cache.get().getNextInAlbum(image);
-            if (next != null) {
-                replaceActivity(next);
-            }
-        }
+        // if (gestureName.equals(GESTURE_BACK)) {
+        // ImageInfo previous = Cache.get().getPreviousInAlbum(image);
+        // if (previous != null) {
+        // replaceActivity(previous);
+        // }
+        // } else if (gestureName.equals(GESTURE_NEXT)) {
+        // ImageInfo next = Cache.get().getNextInAlbum(image);
+        // if (next != null) {
+        // replaceActivity(next);
+        // }
+        // }
     }
 
     private void replaceActivity(ImageInfo newImage) {
@@ -144,8 +139,8 @@ public class ImageViewActivity extends Activity implements
                 result = new BitmapDrawable(response.getEntity().getContent());
                 image.setImage(result);
             } catch (IOException e) {
-                Log.e("GetImageTask", "Error while getting image: "
-                        + e.getMessage());
+                Log.e("GetImageTask",
+                        "Error while getting image: " + e.getMessage());
             }
             return result;
         }
