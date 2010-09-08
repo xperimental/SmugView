@@ -17,4 +17,9 @@
     <string name="auth_title">Setup SmugMug account</string>
     <string name="auth_createfailed">Creating account failed! Please try again.</string>
     <string name="auth_accountneeded">You need to setup a SmugMug account to use this application!</string>
+    <string name="auth_accountcreated">Account has been created successfully.</string>
+    <string name="auth_passwordchanged">Password changed successfully.</string>
+    <string name="auth_prefs_title">Login</string>
+    <string name="auth_prefs_button">Change password</string>
+    <string name="auth_prefs_summary">Click to set a new password if you have changed it in SmugMug.</string>
 </resources>

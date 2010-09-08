@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/auth_prefs_title" />
+    <PreferenceScreen
+        android:key="key1"
+        android:title="@string/auth_prefs_button"
+        android:summary="@string/auth_prefs_summary">
+        <intent
+            android:action="net.sourcewalker.smugview.auth.AuthenticationActivity.CHANGE_PASSWORD"
+            android:targetPackage="net.sourcewalker.smugview"
+            android:targetClass="net.sourcewalker.smugview.auth.AuthenticationActivity" />
+    </PreferenceScreen>
+</PreferenceScreen>

@@ -3,4 +3,5 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:accountType="net.sourcewalker.smugview.auth"
     android:icon="@drawable/authenticator"
-    android:label="@string/authenticator" />
+    android:label="@string/authenticator"
+    android:accountPreferences="@xml/auth_prefs" />

@@ -32,6 +32,7 @@ import com.kallasoft.smugmug.api.json.v1_2_1.login.WithPassword.WithPasswordResp
 public class AuthenticationActivity extends AccountAuthenticatorActivity
         implements OnClickListener {
 
+    private static final String ACTION_PASSWORD = "net.sourcewalker.smugview.auth.AuthenticationActivity.CHANGE_PASSWORD";
     private static final int DIALOG_LOGIN = 100;
 
     private EditText usernameField;
@@ -39,6 +40,9 @@ public class AuthenticationActivity extends AccountAuthenticatorActivity
     private Button cancelButton;
     private Button loginButton;
     private LoginTask loginTask;
+    private Account account;
+    private boolean changePassword = false;
+    private AccountManager accountManager;
 
     /*
      * (non-Javadoc)
@@ -56,6 +60,24 @@ public class AuthenticationActivity extends AccountAuthenticatorActivity
         cancelButton.setOnClickListener(this);
         loginButton = (Button) findViewById(R.id.auth_loginbutton);
         loginButton.setOnClickListener(this);
+
+        accountManager = AccountManager.get(this);
+
+        if (ACTION_PASSWORD.equals(getIntent().getAction())) {
+            Bundle extras = getIntent().getExtras();
+            if (extras != null) {
+                account = (Account) extras.get("account");
+                if (account != null) {
+                    changePassword = true;
+                    usernameField.setText(account.name);
+                    passwordField.setText(accountManager.getPassword(account));
+                } else {
+                    finish();
+                }
+            } else {
+                finish();
+            }
+        }
     }
 
     /*
@@ -98,7 +120,6 @@ public class AuthenticationActivity extends AccountAuthenticatorActivity
         String username = usernameField.getText().toString();
         String password = passwordField.getText().toString();
         Account account = new Account(username, Authenticator.TYPE);
-        AccountManager accountManager = AccountManager.get(this);
         boolean accountCreated = accountManager.addAccountExplicitly(account,
                 password, null);
         if (accountCreated) {
@@ -110,11 +131,21 @@ public class AuthenticationActivity extends AccountAuthenticatorActivity
             result.putString(AccountManager.KEY_ACCOUNT_TYPE,
                     Authenticator.TYPE);
             setAccountAuthenticatorResult(result);
+            Toast.makeText(this, R.string.auth_accountcreated,
+                    Toast.LENGTH_LONG).show();
             finish();
         } else {
             Toast.makeText(this, R.string.auth_createfailed, Toast.LENGTH_LONG)
                     .show();
         }
+    }
+
+    public void changePassword() {
+        String password = passwordField.getText().toString();
+        accountManager.setPassword(account, password);
+        Toast.makeText(this, R.string.auth_passwordchanged, Toast.LENGTH_LONG)
+                .show();
+        finish();
     }
 
     private class LoginTask extends AsyncTask<String, Void, Boolean> {
@@ -146,7 +177,11 @@ public class AuthenticationActivity extends AccountAuthenticatorActivity
             dismissDialog(DIALOG_LOGIN);
             loginTask = null;
             if (result) {
-                createAccount();
+                if (changePassword) {
+                    changePassword();
+                } else {
+                    createAccount();
+                }
             } else {
                 Toast.makeText(getBaseContext(), R.string.loginfailed,
                         Toast.LENGTH_LONG).show();
