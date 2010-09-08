@@ -19,8 +19,6 @@
         </activity>
         <activity
             android:name=".gui.AlbumActivity" />
-        <activity
-            android:name=".gui.ImageViewActivity" />
         <provider
             android:name=".data.SmugViewProvider"
             android:authorities="net.sourcewalker.smugview" />
@@ -36,7 +34,19 @@
                 android:resource="@xml/authenticator" />
         </service>
         <activity
-            android:name=".auth.AuthenticationActivity" android:label="@string/auth_title"/>
+            android:name=".auth.AuthenticationActivity"
+            android:label="@string/auth_title" />
+        <service
+            android:name=".data.SmugViewSyncService"
+            android:exported="true">
+            <intent-filter>
+                <action
+                    android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
     </application>
     <uses-sdk
         android:minSdkVersion="8" />
@@ -52,4 +62,10 @@
         android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission
         android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission
+        android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission
+        android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission
+        android:name="android.permission.WRITE_SYNC_SETTINGS" />
 </manifest>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sync-adapter
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:contentAuthority="net.sourcewalker.smugview"
+    android:accountType="net.sourcewalker.smugview.auth"
+    android:supportsUploading="false" />

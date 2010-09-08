@@ -63,6 +63,11 @@ public class SmugViewProvider extends ContentProvider {
         case MATCH_ALBUM_ID:
             return db.delete(SmugView.Album.TABLE, SmugView.Album._ID + " = ?",
                     new String[] { uri.getLastPathSegment() });
+        case MATCH_IMAGE:
+            return db.delete(SmugView.Image.TABLE, selection, selectionArgs);
+        case MATCH_IMAGE_ID:
+            return db.delete(SmugView.Image.TABLE, SmugView.Image._ID + " = ?",
+                    new String[] { uri.getLastPathSegment() });
         default:
             throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -94,8 +99,31 @@ public class SmugViewProvider extends ContentProvider {
         switch (uriMatcher.match(uri)) {
         case MATCH_ALBUM:
             return insertAlbum(initialValues);
+        case MATCH_IMAGE:
+            return insertImage(initialValues);
         default:
             throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+    }
+
+    private Uri insertImage(ContentValues initialValues) {
+        for (String column : SmugView.Image.DEFAULT_PROJECTION) {
+            if (initialValues.containsKey(column) == false) {
+                throw new IllegalArgumentException("Need column '" + column
+                        + "' : " + initialValues);
+            }
+        }
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        long insert = db.insert(SmugView.Image.TABLE,
+                SmugView.Image.DESCRIPTION, initialValues);
+        if (insert != -1) {
+            Uri imageUri = ContentUris.withAppendedId(
+                    SmugView.Image.CONTENT_URI,
+                    initialValues.getAsInteger(SmugView.Image._ID));
+            getContext().getContentResolver().notifyChange(imageUri, null);
+            return imageUri;
+        } else {
+            return null;
         }
     }
 

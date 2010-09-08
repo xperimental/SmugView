@@ -1,24 +1,35 @@
 package net.sourcewalker.smugview.parcel;
 
+import net.sourcewalker.smugview.data.SmugView;
+import android.content.ContentValues;
 import android.graphics.drawable.Drawable;
-import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.kallasoft.smugmug.api.json.entity.Image;
 
-public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
+public class ImageInfo implements Comparable<ImageInfo> {
 
     private int id;
+    private Integer albumId;
+    private int position;
     private String fileName;
     private String key;
     private String thumbUrl;
     private String viewUrl;
     private String description;
+    private String lastUpdated;
     private Drawable thumbnail;
     private Drawable image;
 
     public int getId() {
         return id;
+    }
+
+    public int getAlbumId() {
+        return albumId;
+    }
+
+    public int getPosition() {
+        return position;
     }
 
     public String getFileName() {
@@ -41,22 +52,32 @@ public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
         return description;
     }
 
-    public ImageInfo(Image source) {
+    public String getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public ImageInfo(int albumId, Image source) {
         this.id = source.getID();
+        this.albumId = albumId;
+        this.position = source.getPosition();
         this.fileName = source.getFileName();
         this.key = source.getImageKey();
         this.thumbUrl = source.getThumbURL();
         this.viewUrl = source.getLargeURL();
         this.description = source.getCaption();
+        this.lastUpdated = source.getLastUpdated();
     }
 
-    private ImageInfo(Parcel source) {
-        this.id = source.readInt();
-        this.fileName = source.readString();
-        this.key = source.readString();
-        this.thumbUrl = source.readString();
-        this.viewUrl = source.readString();
-        this.description = source.readString();
+    public ImageInfo(ContentValues values) {
+        this.id = values.getAsInteger(SmugView.Image._ID);
+        this.albumId = values.getAsInteger(SmugView.Image.ALBUM_ID);
+        this.position = values.getAsInteger(SmugView.Image.POSITION);
+        this.fileName = values.getAsString(SmugView.Image.FILENAME);
+        this.key = values.getAsString(SmugView.Image.KEY);
+        this.thumbUrl = values.getAsString(SmugView.Image.THUMBNAIL_URL);
+        this.viewUrl = values.getAsString(SmugView.Image.IMAGE_URL);
+        this.description = values.getAsString(SmugView.Image.DESCRIPTION);
+        this.lastUpdated = values.getAsString(SmugView.Image.MODIFIED);
     }
 
     public Drawable getThumbnail() {
@@ -76,34 +97,6 @@ public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
     }
 
     @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeString(fileName);
-        dest.writeString(key);
-        dest.writeString(thumbUrl);
-        dest.writeString(viewUrl);
-        dest.writeString(description);
-    }
-
-    public static final Parcelable.Creator<ImageInfo> CREATOR = new Creator<ImageInfo>() {
-
-        @Override
-        public ImageInfo[] newArray(int size) {
-            return new ImageInfo[size];
-        }
-
-        @Override
-        public ImageInfo createFromParcel(Parcel source) {
-            return new ImageInfo(source);
-        }
-    };
-
-    @Override
     public int compareTo(ImageInfo another) {
         return id - another.id;
     }
@@ -115,6 +108,20 @@ public class ImageInfo implements Parcelable, Comparable<ImageInfo> {
         } else {
             return false;
         }
+    }
+
+    public ContentValues toValues() {
+        ContentValues result = new ContentValues();
+        result.put(SmugView.Image._ID, getId());
+        result.put(SmugView.Image.ALBUM_ID, getAlbumId());
+        result.put(SmugView.Image.POSITION, getPosition());
+        result.put(SmugView.Image.FILENAME, getFileName());
+        result.put(SmugView.Image.KEY, getKey());
+        result.put(SmugView.Image.THUMBNAIL_URL, getThumbUrl());
+        result.put(SmugView.Image.IMAGE_URL, getViewUrl());
+        result.put(SmugView.Image.DESCRIPTION, getDescription());
+        result.put(SmugView.Image.MODIFIED, getLastUpdated());
+        return result;
     }
 
 }

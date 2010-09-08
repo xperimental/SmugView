@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import net.sourcewalker.smugview.R;
 import net.sourcewalker.smugview.auth.Authenticator;
-import net.sourcewalker.smugview.data.ReloadAlbumsTask;
 import net.sourcewalker.smugview.data.SmugView;
 import net.sourcewalker.smugview.parcel.Extras;
 import android.accounts.Account;
@@ -19,8 +18,6 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ListView;
@@ -112,31 +109,6 @@ public class AlbumListActivity extends ListActivity {
         Intent intent = new Intent(this, AlbumActivity.class);
         intent.putExtra(Extras.EXTRA_ALBUM, id);
         startActivity(intent);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.albumlist, menu);
-        return true;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.albumlist_refresh:
-            new ReloadAlbumsTask(this).execute();
-            return true;
-        default:
-            return super.onOptionsItemSelected(item);
-        }
     }
 
     private class GetAlbumsTask extends AsyncTask<Void, Void, Cursor> {

@@ -2,11 +2,13 @@ package net.sourcewalker.smugview.auth;
 
 import net.sourcewalker.smugview.ApiConstants;
 import net.sourcewalker.smugview.R;
+import net.sourcewalker.smugview.data.SmugView;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -100,6 +102,9 @@ public class AuthenticationActivity extends AccountAuthenticatorActivity
         boolean accountCreated = accountManager.addAccountExplicitly(account,
                 password, null);
         if (accountCreated) {
+            ContentResolver.setSyncAutomatically(account, SmugView.AUTHORITY,
+                    true);
+
             Bundle result = new Bundle();
             result.putString(AccountManager.KEY_ACCOUNT_NAME, username);
             result.putString(AccountManager.KEY_ACCOUNT_TYPE,

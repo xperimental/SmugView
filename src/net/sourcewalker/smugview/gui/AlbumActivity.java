@@ -6,14 +6,11 @@ import net.sourcewalker.smugview.parcel.AlbumInfo;
 import net.sourcewalker.smugview.parcel.Extras;
 import android.app.ListActivity;
 import android.content.ContentUris;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
 import android.view.Window;
 import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 public class AlbumActivity extends ListActivity {
@@ -43,13 +40,6 @@ public class AlbumActivity extends ListActivity {
         startGetImages();
     }
 
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        Intent intent = new Intent(this, ImageViewActivity.class);
-        intent.putExtra(Extras.EXTRA_IMAGE, id);
-        startActivity(intent);
-    }
-
     private void startGetImages() {
         new GetImagesTask().execute(albumId);
     }
@@ -67,19 +57,6 @@ public class AlbumActivity extends ListActivity {
                     SmugView.Image.DEFAULT_PROJECTION, SmugView.Image.ALBUM_ID
                             + " = ?", new String[] { params[0].toString() },
                     null);
-            // LoginResult login = (LoginResult) params[0];
-            // AlbumInfo album = (AlbumInfo) params[1];
-            // List<ImageInfo> result = new ArrayList<ImageInfo>();
-            //
-            // GetResponse response = new Get().execute(
-            // APIVersionConstants.SECURE_SERVER_URL, ApiConstants.APIKEY,
-            // login.getSession(), album.getId(), album.getKey(), true);
-            // if (!response.isError()) {
-            // for (Image i : response.getImageList()) {
-            // result.add(new ImageInfo(i));
-            // }
-            // }
-            // return result;
         }
 
         @Override
