@@ -1,11 +1,21 @@
 package net.sourcewalker.smugview.data;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sourcewalker.smugview.ApiConstants;
 import net.sourcewalker.smugview.parcel.AlbumInfo;
 import net.sourcewalker.smugview.parcel.ImageInfo;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import com.kallasoft.smugmug.api.json.entity.Album;
 import com.kallasoft.smugmug.api.json.entity.Image;
@@ -41,6 +51,22 @@ public class ServerOperations {
         if (!response.isError()) {
             for (Image image : response.getImageList()) {
                 result.add(new ImageInfo(albumId, image));
+            }
+        }
+        return result;
+    }
+
+    public static Drawable downloadImage(String downloadUrl) {
+        Drawable result = null;
+        if (downloadUrl != null) {
+            HttpGet get = new HttpGet(downloadUrl);
+            HttpClient client = new DefaultHttpClient();
+            try {
+                HttpResponse response = client.execute(get);
+                result = new BitmapDrawable(response.getEntity().getContent());
+            } catch (IOException e) {
+                Log.e("ServerOperations",
+                        "Error downloading image: " + e.getMessage());
             }
         }
         return result;

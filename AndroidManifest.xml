@@ -47,6 +47,8 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
+        <service
+            android:name=".data.ImageDownloadService" />
     </application>
     <uses-sdk
         android:minSdkVersion="8" />
