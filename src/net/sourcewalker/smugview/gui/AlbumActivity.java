@@ -28,10 +28,9 @@ public class AlbumActivity extends ListActivity {
 
         albumId = (Long) getIntent().getExtras().get(Extras.EXTRA_ALBUM);
 
-        Cursor cursor = getContentResolver()
-                .query(ContentUris.withAppendedId(SmugView.Album.CONTENT_URI,
-                        albumId), SmugView.Album.DEFAULT_PROJECTION, null,
-                        null, null);
+        Cursor cursor = managedQuery(
+                ContentUris.withAppendedId(SmugView.Album.CONTENT_URI, albumId),
+                SmugView.Album.DEFAULT_PROJECTION, null, null, null);
         cursor.moveToFirst();
         AlbumInfo album = new AlbumInfo(cursor);
 
