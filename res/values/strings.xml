@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="albumlist_menu_refresh">Refresh albums</string>
+    <string name="albumlist_empty">No items to display!\nTry refreshing.</string>
     <string name="album_menu_refresh">Refresh images</string>
+    <string name="album_empty">No items to display!\nTry refreshing.</string>
     <string name="app_name">SmugView</string>
     <string name="username">Username:</string>
     <string name="password">Password:</string>

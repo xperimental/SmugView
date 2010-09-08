@@ -2,7 +2,15 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/albumlist_empty"
+        android:textSize="10pt"
+        android:gravity="center" />
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
