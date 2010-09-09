@@ -22,4 +22,8 @@
     <string name="auth_prefs_title">Login</string>
     <string name="auth_prefs_button">Change password</string>
     <string name="auth_prefs_summary">Click to set a new password if you have changed it in SmugMug.</string>
+    <string name="sync_title">SmugView Sync</string>
+    <string name="sync_authenticate">Authenticating...</string>
+    <string name="sync_updatealbums">Updating albums...</string>
+    <string name="sync_updateimages">Updating images: %s</string>
 </resources>

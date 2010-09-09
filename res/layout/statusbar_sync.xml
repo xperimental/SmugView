@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="3dp">
+    <ImageView
+        android:id="@+id/sync_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/authenticator"
+        android:layout_marginRight="10dp" />
+    <TextView
+        android:id="@+id/sync_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/sync_icon"
+        android:text="@string/sync_authenticate"
+        android:textSize="7pt"
+        android:textStyle="bold"
+        android:lines="1"
+        android:scrollHorizontally="true"
+        android:ellipsize="end" />
+    <ProgressBar
+        android:id="@+id/sync_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/sync_icon"
+        android:layout_alignBottom="@id/sync_icon"
+        android:max="100"
+        android:progress="0"
+        android:indeterminateOnly="false"
+        android:progressDrawable="@android:drawable/progress_horizontal"
+        android:minHeight="20dip"
+        android:maxHeight="20dip" />
+</RelativeLayout>
