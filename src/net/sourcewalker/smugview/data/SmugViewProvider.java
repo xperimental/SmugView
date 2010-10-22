@@ -36,6 +36,7 @@ public class SmugViewProvider extends ContentProvider {
     private static final int MATCH_IMAGE = 3;
     private static final int MATCH_IMAGE_ID = 4;
     private static final int MATCH_THUMBNAIL = 5;
+    private static final int LOADING_IMAGE = android.R.drawable.ic_menu_rotate;
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -290,8 +291,7 @@ public class SmugViewProvider extends ContentProvider {
                 "loading.png");
         if (!loadingFile.exists()) {
             BitmapDrawable loading = (BitmapDrawable) getContext()
-                    .getResources().getDrawable(
-                            android.R.drawable.ic_menu_rotate);
+                    .getResources().getDrawable(LOADING_IMAGE);
             FileOutputStream stream = new FileOutputStream(loadingFile);
             loading.getBitmap().compress(CompressFormat.PNG, 100, stream);
             try {

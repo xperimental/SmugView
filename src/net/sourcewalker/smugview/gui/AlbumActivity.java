@@ -14,8 +14,6 @@ import android.widget.SimpleCursorAdapter;
 
 public class AlbumActivity extends ListActivity {
 
-    private static final int LOADING_IMAGE = android.R.drawable.ic_menu_rotate;
-
     private static String[] LIST_COLUMNS = new String[] {
             SmugView.Image.DESCRIPTION, SmugView.Image.FILENAME,
             SmugView.Image.CONTENT };
