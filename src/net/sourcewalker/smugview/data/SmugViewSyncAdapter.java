@@ -69,8 +69,6 @@ public class SmugViewSyncAdapter extends AbstractThreadedSyncAdapter {
             if (sessionId != null) {
                 // Remove current content
                 syncResult.stats.numDeletes += provider.delete(
-                        SmugView.Image.CONTENT_URI, null, null);
-                syncResult.stats.numDeletes += provider.delete(
                         SmugView.Album.CONTENT_URI, null, null);
                 // Get list of albums
                 updateNotification(R.string.sync_updatealbums, null, 0, 1);

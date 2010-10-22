@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -33,23 +35,31 @@ public class SmugViewProvider extends ContentProvider {
 
     private static final int MATCH_ALBUM = 1;
     private static final int MATCH_ALBUM_ID = 2;
-    private static final int MATCH_IMAGE = 3;
-    private static final int MATCH_IMAGE_ID = 4;
-    private static final int MATCH_THUMBNAIL = 5;
+    private static final int MATCH_ALBUM_IMAGE = 3;
+    private static final int MATCH_IMAGE = 4;
+    private static final int MATCH_IMAGE_ID = 5;
+    private static final int MATCH_IMAGE_ALBUM = 6;
+    private static final int MATCH_THUMBNAIL = 7;
     private static final int LOADING_IMAGE = android.R.drawable.ic_menu_rotate;
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(SmugView.AUTHORITY, "albums", MATCH_ALBUM);
         uriMatcher.addURI(SmugView.AUTHORITY, "albums/#", MATCH_ALBUM_ID);
+        uriMatcher.addURI(SmugView.AUTHORITY, "albums/byImage/#",
+                MATCH_ALBUM_IMAGE);
         uriMatcher.addURI(SmugView.AUTHORITY, "images", MATCH_IMAGE);
         uriMatcher.addURI(SmugView.AUTHORITY, "images/#", MATCH_IMAGE_ID);
+        uriMatcher.addURI(SmugView.AUTHORITY, "images/byAlbum/#",
+                MATCH_IMAGE_ALBUM);
         uriMatcher.addURI(SmugView.AUTHORITY, "thumbnail/#", MATCH_THUMBNAIL);
 
         albumProjection = new HashMap<String, String>();
         for (String key : SmugView.Album.DEFAULT_PROJECTION) {
             albumProjection.put(key, key);
         }
+        albumProjection.put(SmugView.Image.CONTENT, "'"
+                + SmugView.Thumbnail.CONTENT_URI + "/' || imageid AS content");
 
         imageProjection = new HashMap<String, String>();
         for (String key : SmugView.Image.DEFAULT_PROJECTION) {
@@ -73,20 +83,36 @@ public class SmugViewProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int count = 0;
+        String[] id;
         switch (uriMatcher.match(uri)) {
         case MATCH_ALBUM:
-            return db.delete(SmugView.Album.TABLE, selection, selectionArgs);
+            count += db.delete(SmugView.Image.TABLE, null, null);
+            count += db.delete(SmugView.AlbumImage.TABLE, null, null);
+            count += db.delete(SmugView.Album.TABLE, null, null);
+            break;
         case MATCH_ALBUM_ID:
-            return db.delete(SmugView.Album.TABLE, SmugView.Album._ID + " = ?",
-                    new String[] { uri.getLastPathSegment() });
+            id = new String[] { uri.getLastPathSegment() };
+            count += db.delete(SmugView.AlbumImage.TABLE,
+                    SmugView.AlbumImage.ALBUMID + " = ?", id);
+            count += db.delete(SmugView.Album.TABLE, SmugView.Album._ID
+                    + " = ?", id);
+            break;
         case MATCH_IMAGE:
-            return db.delete(SmugView.Image.TABLE, selection, selectionArgs);
+            count += db.delete(SmugView.AlbumImage.TABLE, null, null);
+            count += db.delete(SmugView.Image.TABLE, selection, selectionArgs);
+            break;
         case MATCH_IMAGE_ID:
-            return db.delete(SmugView.Image.TABLE, SmugView.Image._ID + " = ?",
-                    new String[] { uri.getLastPathSegment() });
+            id = new String[] { uri.getLastPathSegment() };
+            count += db.delete(SmugView.AlbumImage.TABLE,
+                    SmugView.AlbumImage.IMAGEID + " = ?", id);
+            count += db.delete(SmugView.Image.TABLE, SmugView.Image._ID
+                    + " = ?", id);
+            break;
         default:
             throw new IllegalArgumentException("Unknown URI: " + uri);
         }
+        return count;
     }
 
     /*
@@ -132,10 +158,13 @@ public class SmugViewProvider extends ContentProvider {
                         + "' : " + initialValues);
             }
         }
+        ContentValues albumImageValues = getAlbumImageValues(initialValues);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         long insert = db.insert(SmugView.Image.TABLE,
                 SmugView.Image.DESCRIPTION, initialValues);
         if (insert != -1) {
+            db.insert(SmugView.AlbumImage.TABLE, SmugView.AlbumImage.ALBUMID,
+                    albumImageValues);
             Uri imageUri = ContentUris.withAppendedId(
                     SmugView.Image.CONTENT_URI, initialValues
                             .getAsInteger(SmugView.Image._ID));
@@ -144,6 +173,16 @@ public class SmugViewProvider extends ContentProvider {
         } else {
             return null;
         }
+    }
+
+    private ContentValues getAlbumImageValues(ContentValues initialValues) {
+        ContentValues result = new ContentValues();
+        result.put(SmugView.AlbumImage.ALBUMID, initialValues
+                .getAsLong(SmugView.AlbumImage.ALBUMID));
+        result.put(SmugView.AlbumImage.IMAGEID, initialValues
+                .getAsLong(SmugView.Image._ID));
+        initialValues.remove(SmugView.AlbumImage.ALBUMID);
+        return result;
     }
 
     /**
@@ -204,13 +243,19 @@ public class SmugViewProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
             String[] selectionArgs, String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        String groupBy = null;
         switch (uriMatcher.match(uri)) {
         case MATCH_ALBUM:
-            qb.setTables(SmugView.Album.TABLE);
+            qb.setTables(SmugView.Album.TABLE + ", "
+                    + SmugView.AlbumImage.TABLE);
             qb.setProjectionMap(albumProjection);
             if (sortOrder == null) {
                 sortOrder = SmugView.Album.DEFAULT_SORT_ORDER;
             }
+            qb.appendWhere(SmugView.Album._ID + " = "
+                    + SmugView.AlbumImage.ALBUMID);
+            groupBy = SmugView.Album._ID;
+            projection = appendString(projection, SmugView.Image.CONTENT);
             break;
         case MATCH_ALBUM_ID:
             qb.setTables(SmugView.Album.TABLE);
@@ -219,6 +264,16 @@ public class SmugViewProvider extends ContentProvider {
                 sortOrder = SmugView.Album.DEFAULT_SORT_ORDER;
             }
             qb.appendWhere(SmugView.Album._ID + " = "
+                    + ContentUris.parseId(uri));
+            break;
+        case MATCH_ALBUM_IMAGE:
+            qb.setTables(SmugView.Album.TABLE + ", "
+                    + SmugView.AlbumImage.TABLE);
+            qb.setProjectionMap(albumProjection);
+
+            qb.appendWhere(SmugView.Album._ID + " = "
+                    + SmugView.AlbumImage.ALBUMID);
+            qb.appendWhere(" AND " + SmugView.AlbumImage.IMAGEID + " = "
                     + ContentUris.parseId(uri));
             break;
         case MATCH_IMAGE:
@@ -238,6 +293,16 @@ public class SmugViewProvider extends ContentProvider {
             qb.appendWhere(SmugView.Image._ID + " = "
                     + ContentUris.parseId(uri));
             break;
+        case MATCH_IMAGE_ALBUM:
+            qb.setTables(SmugView.AlbumImage.TABLE + ", "
+                    + SmugView.Image.TABLE);
+            qb.setProjectionMap(imageProjection);
+
+            qb.appendWhere(SmugView.AlbumImage.IMAGEID + " = "
+                    + SmugView.Image._ID);
+            qb.appendWhere(" AND " + SmugView.AlbumImage.ALBUMID + " = "
+                    + ContentUris.parseId(uri));
+            break;
         default:
             throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -245,10 +310,17 @@ public class SmugViewProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Log.d("SmugViewProvider", "query(" + uri + ", " + projection + ", "
                 + selection + ", " + selectionArgs + ", " + sortOrder + ")");
-        Cursor c = qb.query(db, projection, selection, selectionArgs, null,
+        Cursor c = qb.query(db, projection, selection, selectionArgs, groupBy,
                 null, sortOrder);
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
+    }
+
+    private String[] appendString(String[] array, String item) {
+        ArrayList<String> list = new ArrayList<String>(array.length + 1);
+        list.addAll(Arrays.asList(array));
+        list.add(item);
+        return list.toArray(array);
     }
 
     /*

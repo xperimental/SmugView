@@ -70,7 +70,7 @@ public class ImageInfo implements Comparable<ImageInfo> {
 
     public ImageInfo(ContentValues values) {
         this.id = values.getAsInteger(SmugView.Image._ID);
-        this.albumId = values.getAsInteger(SmugView.Image.ALBUM_ID);
+        this.albumId = values.getAsInteger(SmugView.AlbumImage.ALBUMID);
         this.position = values.getAsInteger(SmugView.Image.POSITION);
         this.fileName = values.getAsString(SmugView.Image.FILENAME);
         this.key = values.getAsString(SmugView.Image.KEY);
@@ -113,7 +113,7 @@ public class ImageInfo implements Comparable<ImageInfo> {
     public ContentValues toValues() {
         ContentValues result = new ContentValues();
         result.put(SmugView.Image._ID, getId());
-        result.put(SmugView.Image.ALBUM_ID, getAlbumId());
+        result.put(SmugView.AlbumImage.ALBUMID, getAlbumId());
         result.put(SmugView.Image.POSITION, getPosition());
         result.put(SmugView.Image.FILENAME, getFileName());
         result.put(SmugView.Image.KEY, getKey());

@@ -100,8 +100,6 @@ public final class SmugView {
          */
         public static final String TABLE = "images";
 
-        public static final String ALBUM_ID = "album";
-
         public static final String POSITION = "position";
 
         public static final String FILENAME = "filename";
@@ -122,23 +120,42 @@ public final class SmugView {
          * Create statement.
          */
         public static final String SCHEMA = "CREATE TABLE " + TABLE + "(" + _ID
-                + " INTEGER PRIMARY KEY, " + ALBUM_ID + " INTEGER, " + POSITION
-                + " INTEGER, " + FILENAME + " TEXT, " + KEY + " TEXT, "
-                + DESCRIPTION + " TEXT, " + THUMBNAIL_URL + " TEXT, "
-                + IMAGE_URL + " TEXT, " + MODIFIED + " TEXT)";
+                + " INTEGER PRIMARY KEY, " + POSITION + " INTEGER, " + FILENAME
+                + " TEXT, " + KEY + " TEXT, " + DESCRIPTION + " TEXT, "
+                + THUMBNAIL_URL + " TEXT, " + IMAGE_URL + " TEXT, " + MODIFIED
+                + " TEXT)";
 
         /**
          * Default projection containing all columns.
          */
         public static final String[] DEFAULT_PROJECTION = new String[] { _ID,
-                ALBUM_ID, POSITION, FILENAME, KEY, DESCRIPTION, THUMBNAIL_URL,
-                IMAGE_URL, MODIFIED, CONTENT };
+                POSITION, FILENAME, KEY, DESCRIPTION, THUMBNAIL_URL, IMAGE_URL,
+                MODIFIED, CONTENT };
 
         /**
          * Default sort order (by position in album).
          */
-        public static final String DEFAULT_SORT_ORDER = ALBUM_ID + " ASC, "
-                + POSITION + " ASC";
+        public static final String DEFAULT_SORT_ORDER = POSITION + " ASC";
+
+    }
+
+    public static final class AlbumImage {
+
+        public static final Uri CONTENT_URI_IMAGES = Uri.parse("content://"
+                + AUTHORITY + "/images/byAlbum");
+
+        public static final Uri CONTENT_URI_ALBUMS = Uri.parse("content://"
+                + AUTHORITY + "/albums/byImage");
+
+        public static final String TABLE = "albumimage";
+
+        public static final String ALBUMID = "albumid";
+
+        public static final String IMAGEID = "imageid";
+
+        public static final String SCHEMA = "CREATE TABLE " + TABLE + " ("
+                + ALBUMID + " INTEGER, " + IMAGEID + " INTEGER, PRIMARY KEY ("
+                + ALBUMID + ", " + IMAGEID + "))";
 
     }
 

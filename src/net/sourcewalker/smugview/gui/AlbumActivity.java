@@ -56,10 +56,9 @@ public class AlbumActivity extends ListActivity {
 
         @Override
         protected Cursor doInBackground(Long... params) {
-            return managedQuery(SmugView.Image.CONTENT_URI,
-                    SmugView.Image.DEFAULT_PROJECTION, SmugView.Image.ALBUM_ID
-                            + " = ?", new String[] { params[0].toString() },
-                    null);
+            return managedQuery(ContentUris.withAppendedId(
+                    SmugView.AlbumImage.CONTENT_URI_IMAGES, params[0]),
+                    SmugView.Image.DEFAULT_PROJECTION, null, null, null);
         }
 
         @Override

@@ -60,6 +60,7 @@ public class ImageDownloadService extends IntentService {
                             .downloadImage(downloadUrl);
                     ImageStore.writeImage(image, imageFile);
                     getContentResolver().notifyChange(imageUri, null);
+                    notifyAllAlbums(imageId);
                 } else {
                     Log.e(TAG, "Image not found: " + imageUri);
                 }
@@ -67,6 +68,31 @@ public class ImageDownloadService extends IntentService {
                 if (cursor != null) {
                     cursor.close();
                 }
+            }
+        }
+    }
+
+    private void notifyAllAlbums(long imageId) {
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(
+                    ContentUris.withAppendedId(
+                            SmugView.AlbumImage.CONTENT_URI_ALBUMS, imageId),
+                    new String[] { SmugView.Album._ID }, null, null, null);
+            while (cursor.moveToNext()) {
+                long albumId = cursor.getLong(0);
+                getContentResolver().notifyChange(
+                        ContentUris.withAppendedId(SmugView.Album.CONTENT_URI,
+                                albumId), null);
+                getContentResolver().notifyChange(
+                        ContentUris
+                                .withAppendedId(
+                                        SmugView.AlbumImage.CONTENT_URI_IMAGES,
+                                        albumId), null);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
             }
         }
     }

@@ -13,7 +13,7 @@ import android.util.Log;
 public class SmugViewDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "smugview.db";
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 11;
 
     public SmugViewDbHelper(Context ctx) {
         super(ctx, DATABASE_NAME, null, DATABASE_VERSION);
@@ -29,6 +29,7 @@ public class SmugViewDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SmugView.Album.SCHEMA);
         db.execSQL(SmugView.Image.SCHEMA);
+        db.execSQL(SmugView.AlbumImage.SCHEMA);
     }
 
     /*
@@ -43,6 +44,7 @@ public class SmugViewDbHelper extends SQLiteOpenHelper {
                 + " to " + newVersion + " erases all data!");
         db.execSQL("DROP TABLE IF EXISTS " + SmugView.Album.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + SmugView.Image.TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + SmugView.AlbumImage.TABLE);
         onCreate(db);
     }
 

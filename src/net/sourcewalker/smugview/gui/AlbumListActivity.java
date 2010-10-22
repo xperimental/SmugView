@@ -57,13 +57,11 @@ public class AlbumListActivity extends ListActivity {
                         new GetAlbumsTask().execute();
                     } catch (OperationCanceledException e) {
                     } catch (AuthenticatorException e) {
-                        Log.e(TAG,
-                                "Exception while getting authtoken: "
-                                        + e.getMessage());
+                        Log.e(TAG, "Exception while getting authtoken: "
+                                + e.getMessage());
                     } catch (IOException e) {
-                        Log.e(TAG,
-                                "Exception while getting authtoken: "
-                                        + e.getMessage());
+                        Log.e(TAG, "Exception while getting authtoken: "
+                                + e.getMessage());
                     }
                 }
             };
@@ -130,8 +128,10 @@ public class AlbumListActivity extends ListActivity {
 
             listAdapter = new SimpleCursorAdapter(AlbumListActivity.this,
                     R.layout.albumlist_row, result, new String[] {
-                            SmugView.Album.TITLE, SmugView.Album.DESCRIPTION },
-                    new int[] { R.id.albumrow_title, R.id.albumrow_desc });
+                            SmugView.Album.TITLE, SmugView.Album.DESCRIPTION,
+                            SmugView.Image.CONTENT }, new int[] {
+                            R.id.albumrow_title, R.id.albumrow_desc,
+                            R.id.albumrow_image });
             setListAdapter(listAdapter);
         }
     }
