@@ -14,7 +14,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.kallasoft.smugmug.api.json.entity.Album;
@@ -56,8 +55,8 @@ public class ServerOperations {
         return result;
     }
 
-    public static Drawable downloadImage(String downloadUrl) {
-        Drawable result = null;
+    public static BitmapDrawable downloadImage(String downloadUrl) {
+        BitmapDrawable result = null;
         if (downloadUrl != null) {
             HttpGet get = new HttpGet(downloadUrl);
             HttpClient client = new DefaultHttpClient();
@@ -65,8 +64,8 @@ public class ServerOperations {
                 HttpResponse response = client.execute(get);
                 result = new BitmapDrawable(response.getEntity().getContent());
             } catch (IOException e) {
-                Log.e("ServerOperations",
-                        "Error downloading image: " + e.getMessage());
+                Log.e("ServerOperations", "Error downloading image: "
+                        + e.getMessage());
             }
         }
         return result;

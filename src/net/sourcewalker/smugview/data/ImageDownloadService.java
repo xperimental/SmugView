@@ -1,9 +1,13 @@
 package net.sourcewalker.smugview.data;
 
+import java.io.File;
+
 import android.app.IntentService;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
+import android.database.Cursor;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.util.Log;
 
@@ -15,18 +19,17 @@ import android.util.Log;
  */
 public class ImageDownloadService extends IntentService {
 
-    public static final String EXTRA_NOTIFYURI = "net.sourcewalker.smugview.data.ImageDownloadService.EXTRA_NOTIFYURI";
     private static final String TAG = "ImageDownloadService";
+    private static final String KEY_IMAGEID = "_id";
+    private static final String KEY_THUMBNAIL = "thumbnail";
 
-    public static void startDownload(Context context, String downloadUrl,
-            Uri notifyUri) {
+    public static void startDownload(Context context, long imageId,
+            boolean thumbnail) {
         Intent intent = new Intent(context, ImageDownloadService.class);
-        intent.setAction(downloadUrl);
-        intent.putExtra(EXTRA_NOTIFYURI, notifyUri);
+        intent.putExtra(KEY_IMAGEID, imageId);
+        intent.putExtra(KEY_THUMBNAIL, thumbnail);
         context.startService(intent);
     }
-
-    private ImageCache cache = new ImageCache(this);
 
     public ImageDownloadService() {
         super("ImageDownloadThread");
@@ -38,19 +41,33 @@ public class ImageDownloadService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
-        String downloadUrl = intent.getAction();
-        Uri notifyUri = (Uri) intent.getExtras().get(EXTRA_NOTIFYURI);
-        Log.d(TAG, "Downloading image: " + downloadUrl);
-        if (cache.getFromMemory(downloadUrl) == null) {
-            if (cache.loadFromSD(downloadUrl) == false) {
-                Drawable image = ServerOperations.downloadImage(downloadUrl);
-                cache.saveImage(downloadUrl, image);
+        long imageId = intent.getExtras().getLong(KEY_IMAGEID);
+        boolean thumbnail = intent.getExtras().getBoolean(KEY_THUMBNAIL);
+        String column = thumbnail ? SmugView.Image.THUMBNAIL_URL
+                : SmugView.Image.IMAGE_URL;
+        File imageFile = ImageStore.getImageFile(this, imageId, thumbnail);
+        if (!imageFile.exists()) {
+            Cursor cursor = null;
+            try {
+                Uri imageUri = ContentUris.withAppendedId(
+                        SmugView.Image.CONTENT_URI, imageId);
+                cursor = getContentResolver().query(imageUri,
+                        new String[] { column }, null, null, null);
+                if (cursor.moveToFirst()) {
+                    String downloadUrl = cursor.getString(0);
+                    Log.d(TAG, "Downloading image: " + downloadUrl);
+                    BitmapDrawable image = ServerOperations
+                            .downloadImage(downloadUrl);
+                    ImageStore.writeImage(image, imageFile);
+                    getContentResolver().notifyChange(imageUri, null);
+                } else {
+                    Log.e(TAG, "Image not found: " + imageUri);
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
-            Log.d(TAG, "Notifying URI: " + notifyUri);
-            getContentResolver().notifyChange(notifyUri, null);
-        } else {
-            Log.d(TAG, "Skipping: Cached.");
         }
     }
-
 }

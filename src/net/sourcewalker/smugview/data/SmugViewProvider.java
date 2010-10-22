@@ -1,5 +1,9 @@
 package net.sourcewalker.smugview.data;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -10,7 +14,10 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 /**
@@ -28,6 +35,7 @@ public class SmugViewProvider extends ContentProvider {
     private static final int MATCH_ALBUM_ID = 2;
     private static final int MATCH_IMAGE = 3;
     private static final int MATCH_IMAGE_ID = 4;
+    private static final int MATCH_THUMBNAIL = 5;
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -35,6 +43,7 @@ public class SmugViewProvider extends ContentProvider {
         uriMatcher.addURI(SmugView.AUTHORITY, "albums/#", MATCH_ALBUM_ID);
         uriMatcher.addURI(SmugView.AUTHORITY, "images", MATCH_IMAGE);
         uriMatcher.addURI(SmugView.AUTHORITY, "images/#", MATCH_IMAGE_ID);
+        uriMatcher.addURI(SmugView.AUTHORITY, "thumbnail/#", MATCH_THUMBNAIL);
 
         albumProjection = new HashMap<String, String>();
         for (String key : SmugView.Album.DEFAULT_PROJECTION) {
@@ -43,7 +52,13 @@ public class SmugViewProvider extends ContentProvider {
 
         imageProjection = new HashMap<String, String>();
         for (String key : SmugView.Image.DEFAULT_PROJECTION) {
-            imageProjection.put(key, key);
+            if (key.equals(SmugView.Image.CONTENT)) {
+                imageProjection.put(SmugView.Image.CONTENT, "'"
+                        + SmugView.Thumbnail.CONTENT_URI
+                        + "/' || _id AS content");
+            } else {
+                imageProjection.put(key, key);
+            }
         }
     }
 
@@ -108,6 +123,9 @@ public class SmugViewProvider extends ContentProvider {
 
     private Uri insertImage(ContentValues initialValues) {
         for (String column : SmugView.Image.DEFAULT_PROJECTION) {
+            if (column.equals(SmugView.Image.CONTENT)) {
+                continue;
+            }
             if (initialValues.containsKey(column) == false) {
                 throw new IllegalArgumentException("Need column '" + column
                         + "' : " + initialValues);
@@ -118,8 +136,8 @@ public class SmugViewProvider extends ContentProvider {
                 SmugView.Image.DESCRIPTION, initialValues);
         if (insert != -1) {
             Uri imageUri = ContentUris.withAppendedId(
-                    SmugView.Image.CONTENT_URI,
-                    initialValues.getAsInteger(SmugView.Image._ID));
+                    SmugView.Image.CONTENT_URI, initialValues
+                            .getAsInteger(SmugView.Image._ID));
             getContext().getContentResolver().notifyChange(imageUri, null);
             return imageUri;
         } else {
@@ -242,6 +260,49 @@ public class SmugViewProvider extends ContentProvider {
             String[] selectionArgs) {
         // TODO Auto-generated method stub
         return 0;
+    }
+
+    @Override
+    public ParcelFileDescriptor openFile(Uri uri, String mode)
+            throws FileNotFoundException {
+        if (!"r".equals(mode)) {
+            throw new IllegalArgumentException("Only read mode allowed!");
+        }
+        switch (uriMatcher.match(uri)) {
+        case MATCH_THUMBNAIL:
+            long id = ContentUris.parseId(uri);
+            File thumbnailFile = ImageStore
+                    .getImageFile(getContext(), id, true);
+            if (thumbnailFile.exists()) {
+                return ParcelFileDescriptor.open(thumbnailFile,
+                        ParcelFileDescriptor.MODE_READ_ONLY);
+            } else {
+                ImageDownloadService.startDownload(getContext(), id, true);
+                return getLoadingImage();
+            }
+        default:
+            throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+    }
+
+    private ParcelFileDescriptor getLoadingImage() throws FileNotFoundException {
+        File loadingFile = new File(getContext().getExternalFilesDir(null),
+                "loading.png");
+        if (!loadingFile.exists()) {
+            BitmapDrawable loading = (BitmapDrawable) getContext()
+                    .getResources().getDrawable(
+                            android.R.drawable.ic_menu_rotate);
+            FileOutputStream stream = new FileOutputStream(loadingFile);
+            loading.getBitmap().compress(CompressFormat.PNG, 100, stream);
+            try {
+                stream.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Couldn't write image: "
+                        + e.getMessage(), e);
+            }
+        }
+        return ParcelFileDescriptor.open(loadingFile,
+                ParcelFileDescriptor.MODE_READ_ONLY);
     }
 
 }

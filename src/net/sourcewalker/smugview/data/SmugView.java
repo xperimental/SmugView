@@ -116,6 +116,8 @@ public final class SmugView {
 
         public static final String MODIFIED = "modified";
 
+        public static final String CONTENT = "content";
+
         /**
          * Create statement.
          */
@@ -130,13 +132,30 @@ public final class SmugView {
          */
         public static final String[] DEFAULT_PROJECTION = new String[] { _ID,
                 ALBUM_ID, POSITION, FILENAME, KEY, DESCRIPTION, THUMBNAIL_URL,
-                IMAGE_URL, MODIFIED };
+                IMAGE_URL, MODIFIED, CONTENT };
 
         /**
          * Default sort order (by position in album).
          */
         public static final String DEFAULT_SORT_ORDER = ALBUM_ID + " ASC, "
                 + POSITION + " ASC";
+
+    }
+
+    public static final class Thumbnail implements BaseColumns {
+
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+                + AUTHORITY + "/thumbnail");
+
+        /**
+         * Content type of a list of albums.
+         */
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/net.sourcewalker.smugview.thumbnail";
+
+        /**
+         * Content type of a single album.
+         */
+        public static final String CONTENT_TYPE_ITEM = "vnd.android.cursor.item/net.sourcewalker.smugview.thumbnail";
 
     }
 
