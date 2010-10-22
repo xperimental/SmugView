@@ -82,17 +82,17 @@ public class SmugViewSyncAdapter extends AbstractThreadedSyncAdapter {
                     if (canceled) {
                         throw new OperationCanceledException();
                     }
-                    updateNotification(R.string.sync_updateimages,
-                            album.getTitle(), position, count);
+                    updateNotification(R.string.sync_updateimages, album
+                            .getTitle(), position, count);
                     Log.d(TAG, "Getting images for: " + album.getTitle());
-                    provider.insert(SmugView.Album.CONTENT_URI,
-                            album.toValues());
+                    provider.insert(SmugView.Album.CONTENT_URI, album
+                            .toValues());
                     syncResult.stats.numInserts++;
                     List<ImageInfo> images = ServerOperations.getImages(
                             sessionId, album.getId(), album.getKey());
                     for (ImageInfo image : images) {
-                        provider.insert(SmugView.Image.CONTENT_URI,
-                                image.toValues());
+                        provider.insert(SmugView.Image.CONTENT_URI, image
+                                .toValues());
                         syncResult.stats.numInserts++;
                     }
                     position++;
@@ -125,7 +125,7 @@ public class SmugViewSyncAdapter extends AbstractThreadedSyncAdapter {
     private void updateNotification(int stringId, String field, int position,
             int count) {
         String format = context.getString(stringId);
-        String text = String.format(format, position, count);
+        String text = String.format(format, field);
 
         final Notification notification = new Notification(
                 R.drawable.statusbar, text, System.currentTimeMillis());
