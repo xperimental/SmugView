@@ -1,6 +1,7 @@
 package net.sourcewalker.smugview.data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -12,6 +13,7 @@ import android.util.Log;
 
 public class ImageStore {
 
+    public static final int LOADING_IMAGE = android.R.drawable.ic_menu_rotate;
     private static final String TAG = "ImageStore";
 
     public static File getImageFile(Context context, long imageId,
@@ -33,6 +35,18 @@ public class ImageStore {
         } catch (IOException e) {
             Log.e(TAG, "Couldn't write image: " + e.getMessage());
         }
+    }
+
+    public static BitmapDrawable readImage(File imageFile) {
+        BitmapDrawable result = null;
+        try {
+            FileInputStream stream = new FileInputStream(imageFile);
+            result = new BitmapDrawable(stream);
+            stream.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Couldn't read image: " + e.getMessage());
+        }
+        return result;
     }
 
 }

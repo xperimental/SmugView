@@ -33,6 +33,7 @@ public class SmugViewProvider extends ContentProvider {
     private static final HashMap<String, String> albumProjection;
     private static final HashMap<String, String> imageProjection;
 
+    private static final String TAG = "SmugViewProvider";
     private static final int MATCH_ALBUM = 1;
     private static final int MATCH_ALBUM_ID = 2;
     private static final int MATCH_ALBUM_IMAGE = 3;
@@ -40,7 +41,6 @@ public class SmugViewProvider extends ContentProvider {
     private static final int MATCH_IMAGE_ID = 5;
     private static final int MATCH_IMAGE_ALBUM = 6;
     private static final int MATCH_THUMBNAIL = 7;
-    private static final int LOADING_IMAGE = android.R.drawable.ic_menu_rotate;
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -341,6 +341,7 @@ public class SmugViewProvider extends ContentProvider {
         if (!"r".equals(mode)) {
             throw new IllegalArgumentException("Only read mode allowed!");
         }
+        Log.d(TAG, "openFile(" + uri + ")");
         switch (uriMatcher.match(uri)) {
         case MATCH_THUMBNAIL:
             long id = ContentUris.parseId(uri);
@@ -363,7 +364,7 @@ public class SmugViewProvider extends ContentProvider {
                 "loading.png");
         if (!loadingFile.exists()) {
             BitmapDrawable loading = (BitmapDrawable) getContext()
-                    .getResources().getDrawable(LOADING_IMAGE);
+                    .getResources().getDrawable(ImageStore.LOADING_IMAGE);
             FileOutputStream stream = new FileOutputStream(loadingFile);
             loading.getBitmap().compress(CompressFormat.PNG, 100, stream);
             try {
